@@ -4,6 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import logging
+import os
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -11,11 +12,16 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+# Determine the absolute path to the directory containing main.py
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # Mount static files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+STATIC_DIR = os.path.join(SCRIPT_DIR, "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Setup templates
-templates = Jinja2Templates(directory="templates")
+TEMPLATES_DIR = os.path.join(SCRIPT_DIR, "templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 class KeyPressEvent(BaseModel):
     key: str
