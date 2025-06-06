@@ -11,6 +11,10 @@ COPY requirements.txt .
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the .env file into the container at /app_container
+# This assumes .env is in the root of your build context
+COPY .env .
+
 # Copy the app directory contents into the container at /app_container/app
 # This assumes your app directory is in the root of your build context
 COPY app/ ./app/

@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -6,14 +7,18 @@ from pydantic import BaseModel
 import logging
 import os
 
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(SCRIPT_DIR, "static")
 TEMPLATES_DIR = os.path.join(SCRIPT_DIR, "templates")
+PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 
-SECRET_SPELL = "abc"
+load_dotenv(dotenv_path=os.path.join(PARENT_DIR, ".env"))
+
+SECRET_SPELL = os.getenv("APP_SECRET_SPELL")
 user_key_buffers = {}
 user_access_granted = {}
 

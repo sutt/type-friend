@@ -33,10 +33,14 @@ This application tracks keypresses from a web client and logs them on a FastAPI 
         *   If no `session_id` is provided, returns an HTTP 401 Unauthorized error.
         *   If `session_id` is provided but access is not granted (spell not cast or invalid `session_id`), returns an HTTP 403 Forbidden error.
     *   **State Management (In-Memory):**
-        *   `SECRET_SPELL`: A hardcoded string (e.g., "opensesame") representing the sequence of keys to be pressed.
+        *   `SECRET_SPELL`: Loaded from an environment variable. The `python-dotenv` library is used to load this from a `.env` file if present in the application's root directory (e.g., `/app_container` in Docker). This string represents the sequence of keys to be pressed. A default value is used if not set.
         *   `user_key_buffers`: A Python dictionary storing the recent keypress history (as a list of characters) for each active user session UUID.
         *   `user_access_granted`: A Python dictionary storing boolean flags indicating whether a user session UUID has successfully cast the spell.
         *   Note: This state is in-memory and will be lost if the server restarts. For persistence, a database or other external store would be needed.
+    *   **Configuration (`.env` file):**
+        *   A `.env` file at the project root is used to store the `SECRET_SPELL`.
+        *   An `.env.example` file provides a template.
+        *   When running with Docker, the `Dockerfile` is configured to copy the `.env` file into the image. For production, consider injecting environment variables at runtime instead of bundling the `.env` file.
 
 ## Flow for Secret Spell
 
