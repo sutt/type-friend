@@ -1,0 +1,2 @@
+- when running /run or /test commands make sure to activate the app's virtualenv within the command. This is because the aider chat environemnt is not environment in which the app runs. To do this activate python associated with the app inline in your bash commands, e.g.: `venv/bin/python app/main.py`. 
+    - Also do the same for working with other python scripts on the app, e.g. pip or pytest. For example to install libraries to the app environment use: `venv/bin/pip install pytest` and to execute pytest do `venv/bin/python -m pytest tests`.
