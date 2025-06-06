@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const pressedKeyElement = document.getElementById('pressed-key');
+    let userSessionId = crypto.randomUUID(); // Generate UUID for this session
+    console.log(`User session ID: ${userSessionId}`);
 
     document.addEventListener('keydown', async (event) => {
         const key = event.key;
@@ -12,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ key: key }),
+                body: JSON.stringify({ key: key, uuid: userSessionId }),
             });
 
             if (!response.ok) {
@@ -22,6 +24,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const result = await response.json();
             console.log('Server response:', result);
+
+            if (result.spell_successful) {
+              const protectedButton = document.getElementById('protected-link');
+              if (protectedButton) {
+                 protectedButton.style.display = 'block';
+                 protectedButton.onclick = function() {
+                    window.location.href = `/protected_resource?session_id=${userSessionId}`;
+                 };
+              }
+            }
         } catch (error) {
             console.error('Error sending keypress event:', error);
         }

@@ -21,3 +21,19 @@ h1 {
     font-weight: bold;
     color: #d9534f;
 }
+
+#protected-link {
+    display: none; /* Hidden by default */
+    margin-top: 20px;
+    padding: 10px 15px;
+    font-size: 1em;
+    color: white;
+    background-color: #28a745; /* Green */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#protected-link:hover {
+    background-color: #218838; /* Darker green */
+}
