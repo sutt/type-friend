@@ -22,8 +22,8 @@ This application tracks keypresses from a web client and logs them on a FastAPI 
     *   Serves static files from `/static`.
     *   **`/keypress` Endpoint (POST):**
         *   Receives `key` and `uuid` (the session UUID) from the client.
-        *   Maintains a buffer of the most recent keypresses for each `uuid`. The buffer length is tied to the `SECRET_SPELL` length.
-        *   Checks if the current buffer for a `uuid` matches a predefined `SECRET_SPELL`.
+        *   Maintains a buffer (list of key strings) of the most recent keypresses for each `uuid`. The buffer length is tied to the number of keys in the parsed `SECRET_SPELL` (from `APP_SECRET_SPELL` environment variable).
+        *   Checks if the current buffer (list of key strings) for a `uuid` matches the predefined `PARSED_SECRET_SPELL` (a list of key strings).
         *   If the spell matches, it flags that `uuid` as having successfully cast the spell by setting `user_access_granted[uuid] = True`.
         *   Returns a JSON response including `{"message": "...", "spell_successful": true/false}`.
     *   **`/protected_resource` Endpoint (GET):**
@@ -33,12 +33,14 @@ This application tracks keypresses from a web client and logs them on a FastAPI 
         *   If no `session_id` is provided, returns an HTTP 401 Unauthorized error.
         *   If `session_id` is provided but access is not granted (spell not cast or invalid `session_id`), returns an HTTP 403 Forbidden error.
     *   **State Management (In-Memory):**
-        *   `SECRET_SPELL`: Loaded from an environment variable. The `python-dotenv` library is used to load this from a `.env` file if present in the application's root directory (e.g., `/app_container` in Docker). This string represents the sequence of keys to be pressed. A default value is used if not set.
-        *   `user_key_buffers`: A Python dictionary storing the recent keypress history (as a list of characters) for each active user session UUID.
+        *   `APP_SECRET_SPELL`: Loaded from an environment variable (e.g., from a `.env` file). This is a comma-separated string representing the sequence of individual keys (e.g., "ArrowUp,ArrowUp,a,b,Enter").
+        *   `PARSED_SECRET_SPELL`: The `APP_SECRET_SPELL` string is parsed into a list of key strings (e.g., `['ArrowUp', 'ArrowUp', 'a', 'b', 'Enter']`) at application startup. This list is used for matching.
+        *   `SECRET_SPELL_KEY_COUNT`: The number of keys in `PARSED_SECRET_SPELL`. Used for buffer trimming.
+        *   `user_key_buffers`: A Python dictionary storing the recent keypress history (as a list of key strings, e.g., `['ArrowUp', 'a']`) for each active user session UUID.
         *   `user_access_granted`: A Python dictionary storing boolean flags indicating whether a user session UUID has successfully cast the spell.
         *   Note: This state is in-memory and will be lost if the server restarts. For persistence, a database or other external store would be needed.
     *   **Configuration (`.env` file):**
-        *   A `.env` file at the project root is used to store the `SECRET_SPELL`.
+        *   A `.env` file at the project root is used to store the `APP_SECRET_SPELL` as a comma-delimited string (e.g., `APP_SECRET_SPELL='key1,key2,Enter,key3'`).
         *   An `.env.example` file provides a template.
         *   When running with Docker, the `Dockerfile` is configured to copy the `.env` file into the image. For production, consider injecting environment variables at runtime instead of bundling the `.env` file.
 
@@ -49,10 +51,11 @@ This application tracks keypresses from a web client and logs them on a FastAPI 
 3.  User presses keys.
 4.  For each keypress, `script.js` sends `{ "key": "pressed_key", "uuid": "userSessionId" }` to the `/keypress` endpoint.
 5.  The server's `/keypress` endpoint:
-    a.  Retrieves or initializes the key buffer for `userSessionId`.
-    b.  Appends the new key and trims the buffer.
-    c.  Compares the buffer to `SECRET_SPELL`.
-    d.  If they match, sets `user_access_granted[userSessionId] = True`.
+    a.  Retrieves or initializes the key buffer (a list of key strings) for `userSessionId`.
+    b.  Appends the new key (e.g., "Enter", "a") to the buffer.
+    c.  Trims the buffer to the length of `SECRET_SPELL_KEY_COUNT`.
+    d.  Compares the buffer (list of keys) to `PARSED_SECRET_SPELL` (list of keys).
+    e.  If they match, sets `user_access_granted[userSessionId] = True`.
     e.  Returns a JSON response, including `spell_successful` status.
 6.  The client-side `script.js` receives the response. If `spell_successful` is true, it can then:
     a.  Modify the UI (e.g., show a link to the protected resource).
