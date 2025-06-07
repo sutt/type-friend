@@ -21,7 +21,25 @@ PARENT_DIR = os.path.dirname(SCRIPT_DIR)
 
 load_dotenv(dotenv_path=os.path.join(PARENT_DIR, ".env"))
 
-SECRET_SPELL = os.getenv("APP_SECRET_SPELL")
+# XXX: Load the secret spell from environment variable as a comma-separated string.
+# XXX: Default to an empty string if not set.
+SECRET_SPELL_FROM_ENV = os.getenv("APP_SECRET_SPELL", "")
+# XXX: Parse the comma-separated string into a list of individual key strings.
+# XXX: Ensure keys are stripped of whitespace and empty strings (from "key1,,key2") are filtered out.
+PARSED_SECRET_SPELL = [key.strip() for key in SECRET_SPELL_FROM_ENV.split(',') if key.strip()] if SECRET_SPELL_FROM_ENV else []
+# XXX: Store the number of keys in the secret spell.
+SECRET_SPELL_KEY_COUNT = len(PARSED_SECRET_SPELL)
+
+# XXX: Log the parsed spell for debugging.
+# XXX: Warn if the spell is effectively empty, as spell casting won't work then.
+if not PARSED_SECRET_SPELL:
+    logger.warning(
+        "APP_SECRET_SPELL is not defined, is empty, or contains only delimiters. "
+        "The spell casting feature will be disabled as no valid spell sequence is configured."
+    )
+else:
+    logger.info(f"Secret spell loaded as key sequence: {PARSED_SECRET_SPELL}")
+
 user_key_buffers = {}
 user_access_granted = {}
 
@@ -54,23 +72,36 @@ async def log_keypress(event: KeyPressEvent):
     current_buffer = user_key_buffers.get(client_uuid, [])
     current_buffer.append(event.key)
 
-    current_buffer = current_buffer[-len(SECRET_SPELL) :]
+    # XXX: Trim the buffer to the length of the number of keys in the secret spell.
+    if SECRET_SPELL_KEY_COUNT > 0:
+        current_buffer = current_buffer[-SECRET_SPELL_KEY_COUNT:]
+    elif SECRET_SPELL_KEY_COUNT == 0:
+        # XXX: If the configured spell is empty, the buffer should also be empty.
+        current_buffer = []
+    # XXX: If SECRET_SPELL_KEY_COUNT is 0 and current_buffer had items,
+    # XXX: it will be correctly emptied by the above.
+    # XXX: If current_buffer was already shorter than SECRET_SPELL_KEY_COUNT, it's preserved.
+
     user_key_buffers[client_uuid] = current_buffer
 
+    # XXX: Log the current buffer as a list of keys.
     logger.info(
-        f"Key pressed: {event.key} from UUID: {client_uuid}. Buffer: {''.join(current_buffer)}"
+        f"Key pressed: {event.key} from UUID: {client_uuid}. Buffer: {current_buffer}"
     )
 
     response_message = {"message": f"Key '{event.key}' received"}
 
-    if "".join(current_buffer) == SECRET_SPELL:
+    # XXX: Check if the spell is defined (not empty) and if the current buffer matches the parsed secret spell.
+    if PARSED_SECRET_SPELL and current_buffer == PARSED_SECRET_SPELL:
         user_access_granted[client_uuid] = True
+        # XXX: Log success with the spell shown as a list of keys.
         logger.info(
-            f"Secret spell '{SECRET_SPELL}' cast successfully by UUID: {client_uuid}"
+            f"Secret spell {PARSED_SECRET_SPELL} cast successfully by UUID: {client_uuid}"
         )
         response_message["spell_successful"] = True
+        # XXX: For the user-facing message, show the spell as a comma-joined string for readability.
         response_message["message"] = (
-            f"Key '{event.key}' received. Spell '{SECRET_SPELL}' cast successfully!"
+            f"Key '{event.key}' received. Spell '{','.join(PARSED_SECRET_SPELL)}' cast successfully!"
         )
     else:
         response_message["spell_successful"] = False
