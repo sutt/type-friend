@@ -26,7 +26,11 @@ load_dotenv(dotenv_path=os.path.join(PARENT_DIR, ".env"))
 SECRET_SPELL_FROM_ENV = os.getenv("APP_SECRET_SPELL", "")
 # XXX: Parse the comma-separated string into a list of individual key strings.
 # XXX: Ensure keys are stripped of whitespace and empty strings (from "key1,,key2") are filtered out.
-PARSED_SECRET_SPELL = [key.strip() for key in SECRET_SPELL_FROM_ENV.split(',') if key.strip()] if SECRET_SPELL_FROM_ENV else []
+PARSED_SECRET_SPELL = (
+    [key.strip() for key in SECRET_SPELL_FROM_ENV.split(",") if key.strip()]
+    if SECRET_SPELL_FROM_ENV
+    else []
+)
 # XXX: Store the number of keys in the secret spell.
 SECRET_SPELL_KEY_COUNT = len(PARSED_SECRET_SPELL)
 
