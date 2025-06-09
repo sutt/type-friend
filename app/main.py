@@ -8,6 +8,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
+from key_buffer_manager import KeyBufferManager
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -25,17 +27,14 @@ PARSED_SECRET_SPELL = (
     if SECRET_SPELL_FROM_ENV
     else []
 )
-SECRET_SPELL_KEY_COUNT = len(PARSED_SECRET_SPELL)
 
 if not PARSED_SECRET_SPELL:
     logger.warning(
         "APP_SECRET_SPELL is not defined, is empty, or contains only delimiters. "
         "The spell casting feature will be disabled as no valid spell sequence is configured."
     )
-else:
-    logger.info(f"Secret spell loaded as key sequence: {PARSED_SECRET_SPELL}")
 
-user_key_buffers = {}
+key_buffer_manager = KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
 user_access_granted = {}
 
 app = FastAPI()
@@ -63,32 +62,21 @@ async def log_keypress(event: KeyPressEvent):
     """
     Receives keypress events from the client and checks for the secret spell.
     """
-    client_uuid = event.uuid
-    current_buffer = user_key_buffers.get(client_uuid, [])
-    current_buffer.append(event.key)
-
-    if SECRET_SPELL_KEY_COUNT > 0:
-        current_buffer = current_buffer[-SECRET_SPELL_KEY_COUNT:]
-    elif SECRET_SPELL_KEY_COUNT == 0:
-        current_buffer = []
-
-    user_key_buffers[client_uuid] = current_buffer
+    current_buffer = key_buffer_manager.add_key(user_uuid=event.uuid, key=event.key)
 
     logger.info(
-        f"Key pressed: {event.key} from UUID: {client_uuid}. Buffer: {current_buffer}"
+        f"Key pressed: {event.key} from UUID: {event.uuid}. Buffer: {current_buffer}"
     )
 
     response_message = {"message": f"Key '{event.key}' received"}
 
-    if PARSED_SECRET_SPELL and current_buffer == PARSED_SECRET_SPELL:
-        user_access_granted[client_uuid] = True
-        logger.info(
-            f"Secret spell {PARSED_SECRET_SPELL} cast successfully by UUID: {client_uuid}"
-        )
+    if key_buffer_manager.check_spell(user_uuid=event.uuid):
+        user_access_granted[event.uuid] = True
         response_message["spell_successful"] = True
         response_message["message"] = (
-            f"Key '{event.key}' received. Spell '{','.join(PARSED_SECRET_SPELL)}' cast successfully!"
+            f"Key '{event.key}' received. Spell cast successfully!"
         )
+        logger.info(f"Secret spell cast successfully by UUID: {event.uuid}")
     else:
         response_message["spell_successful"] = False
 
