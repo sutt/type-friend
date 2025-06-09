@@ -8,7 +8,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
-# print('Hello World')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
