@@ -29,22 +29,15 @@ class TestKeypressEndpoint:
         assert data["message"] == "Key 'a' received"
         assert data["spell_successful"] is False
     
-    @pytest.mark.skip(reason="Spell sequence test needs environment configuration fix")
-    def test_keypress_complete_spell_sequence(self, test_client, test_uuid):
+    def test_keypress_complete_spell_sequence(self, test_client_with_spell, test_uuid, simple_spell):
         """Test completing the spell sequence triggers success."""
-        # Assuming the app is configured with default spell from environment
-        # We'll use a simple sequence that should work with most configurations
-        keys = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
-                "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", 
-                "b", "a", "Enter"]
-        
         responses = []
-        for key in keys:
+        for key in simple_spell:
             payload = {"key": key, "uuid": test_uuid}
-            response = test_client.post("/keypress", json=payload)
+            response = test_client_with_spell.post("/keypress", json=payload)
             responses.append(response.json())
         
-        # Last response should indicate spell success
+        # XXX: Last response should indicate spell success
         final_response = responses[-1]
         assert final_response["spell_successful"] is True
         assert "Spell cast successfully!" in final_response["message"]
@@ -62,17 +55,17 @@ class TestKeypressEndpoint:
         user1 = "uuid-user-1"
         user2 = "uuid-user-2"
         
-        # User 1 starts spell sequence
+        # XXX: User 1 starts spell sequence
         payload1 = {"key": "ArrowUp", "uuid": user1}
         response1 = test_client.post("/keypress", json=payload1)
         assert response1.json()["spell_successful"] is False
         
-        # User 2 presses different key
+        # XXX: User 2 presses different key
         payload2 = {"key": "x", "uuid": user2}
         response2 = test_client.post("/keypress", json=payload2)
         assert response2.json()["spell_successful"] is False
         
-        # Users should have independent progress
+        # XXX: Users should have independent progress
         assert response1.status_code == 200
         assert response2.status_code == 200
 
@@ -94,22 +87,17 @@ class TestProtectedResourceEndpoint:
         assert response.status_code == 403
         assert response.json()["detail"] == "Access denied. Cast the secret spell correctly."
     
-    # @pytest.mark.skip(reason="Protected resource test needs spell casting fix")
-    @patch.dict('os.environ', {'APP_SECRET_SPELL': 'x,y,z'})
-    def test_protected_resource_valid_access(self, test_client, test_uuid):
+    def test_protected_resource_valid_access(self, test_client_with_custom_spell, test_uuid):
         """Test accessing protected resource after casting spell."""
-        # First, cast the spell to gain access
-        # keys = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
-        #         "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", 
-        #         "b", "a", "Enter"]
-        keys = ['x','y','z']
+        # XXX: Cast the custom spell sequence (x, y, z)
+        keys = ['x', 'y', 'z']
         
         for key in keys:
             payload = {"key": key, "uuid": test_uuid}
-            test_client.post("/keypress", json=payload)
+            test_client_with_custom_spell.post("/keypress", json=payload)
         
-        # Now access the protected resource
-        response = test_client.get(f"/protected_resource?session_id={test_uuid}")
+        # XXX: Now access the protected resource
+        response = test_client_with_custom_spell.get(f"/protected_resource?session_id={test_uuid}")
         
         assert response.status_code == 200
         data = response.json()
@@ -120,68 +108,76 @@ class TestProtectedResourceEndpoint:
 class TestEnvironmentConfiguration:
     """Tests demonstrating environment variable configuration."""
     
-    @patch.dict('os.environ', {'APP_SECRET_SPELL': 'x,y,z'})
-    def test_custom_spell_from_environment(self, test_client, test_uuid):
-        """Test that custom spell from environment works."""
-        # Note: This test demonstrates the principle but may not work
-        # with the current app structure since env is loaded at startup
-        # In a real scenario, you'd restart the app or use dependency injection
-        
-        # Try the custom spell sequence
+    def test_custom_spell_from_dependency_injection(self, test_client_with_custom_spell, test_uuid):
+        """Test that custom spell from dependency injection works."""
+        # XXX: Try the custom spell sequence
         keys = ["x", "y", "z"]
         responses = []
         
         for key in keys:
             payload = {"key": key, "uuid": test_uuid}
-            response = test_client.post("/keypress", json=payload)
+            response = test_client_with_custom_spell.post("/keypress", json=payload)
             responses.append(response.json())
         
-        # This demonstrates the test structure even if env loading timing differs
+        # XXX: All but the last should be false, last should be true
         assert all(r["spell_successful"] is False for r in responses[:-1])
+        assert responses[-1]["spell_successful"] is True
     
-    @patch.dict('os.environ', {'APP_SECRET_SPELL': ''})
-    def test_empty_spell_configuration(self, test_client, test_uuid):
+    def test_empty_spell_configuration(self, test_uuid):
         """Test behavior with empty spell configuration."""
-        # With empty spell, no sequence should trigger success
-        payload = {"key": "a", "uuid": test_uuid}
-        response = test_client.post("/keypress", json=payload)
+        from main import app, get_key_buffer_manager, get_user_access_state
+        from key_buffer_manager import KeyBufferManager
         
-        assert response.status_code == 200
-        assert response.json()["spell_successful"] is False
+        # XXX: Override with empty spell
+        def create_empty_spell_manager():
+            return KeyBufferManager(parsed_secret_spell=[])
+        
+        def create_test_access_state():
+            return {}
+        
+        app.dependency_overrides[get_key_buffer_manager] = create_empty_spell_manager
+        app.dependency_overrides[get_user_access_state] = create_test_access_state
+        
+        client = TestClient(app)
+        
+        try:
+            # XXX: With empty spell, no sequence should trigger success
+            payload = {"key": "a", "uuid": test_uuid}
+            response = client.post("/keypress", json=payload)
+            
+            assert response.status_code == 200
+            assert response.json()["spell_successful"] is False
+        finally:
+            # XXX: Clean up
+            app.dependency_overrides.clear()
 
 
 class TestEndToEndFlow:
     """End-to-end integration tests."""
     
-    @pytest.mark.skip(reason="End-to-end test needs spell casting fix")
-    def test_complete_user_journey(self, test_client):
+    def test_complete_user_journey(self, test_client_with_spell, simple_spell):
         """Test complete user journey from keypress to protected access."""
         user_uuid = "e2e-test-uuid"
         
-        # Step 1: User loads the page (implicitly tested by other tests)
-        root_response = test_client.get("/")
+        # XXX: Step 1: User loads the page (implicitly tested by other tests)
+        root_response = test_client_with_spell.get("/")
         assert root_response.status_code == 200
         
-        # Step 2: User presses keys to cast spell
-        spell_keys = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
-                      "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", 
-                      "b", "a", "Enter"]
-        
+        # XXX: Step 2: User presses keys to cast spell
         spell_successful = False
-        for key in spell_keys:
+        for key in simple_spell:
             payload = {"key": key, "uuid": user_uuid}
-            response = test_client.post("/keypress", json=payload)
+            response = test_client_with_spell.post("/keypress", json=payload)
             assert response.status_code == 200
             
             if response.json().get("spell_successful"):
                 spell_successful = True
-                break
         
-        # Step 3: Verify spell was cast successfully
+        # XXX: Step 3: Verify spell was cast successfully
         assert spell_successful, "Spell should have been cast successfully"
         
-        # Step 4: Access protected resource
-        protected_response = test_client.get(f"/protected_resource?session_id={user_uuid}")
+        # XXX: Step 4: Access protected resource
+        protected_response = test_client_with_spell.get(f"/protected_resource?session_id={user_uuid}")
         assert protected_response.status_code == 200
         assert "Welcome to the protected resource!" in protected_response.json()["message"]
     
@@ -189,14 +185,14 @@ class TestEndToEndFlow:
         """Test that user who hasn't cast spell cannot access protected resource."""
         user_uuid = "no-spell-uuid"
         
-        # User presses some keys but not the correct spell
+        # XXX: User presses some keys but not the correct spell
         wrong_keys = ["a", "b", "c"]
         for key in wrong_keys:
             payload = {"key": key, "uuid": user_uuid}
             response = test_client.post("/keypress", json=payload)
             assert response.json()["spell_successful"] is False
         
-        # Try to access protected resource
+        # XXX: Try to access protected resource
         protected_response = test_client.get(f"/protected_resource?session_id={user_uuid}")
         assert protected_response.status_code == 403
         assert "Access denied" in protected_response.json()["detail"]

@@ -7,7 +7,7 @@ from unittest.mock import patch
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'app'))
 
-from main import app, key_buffer_manager, user_access_granted
+from main import app, get_key_buffer_manager, get_user_access_state
 from key_buffer_manager import KeyBufferManager
 
 
@@ -43,17 +43,60 @@ def test_uuid():
     return "test-uuid-12345"
 
 
+@pytest.fixture
+def test_access_state():
+    """Create a fresh access state dictionary for testing."""
+    return {}
+
+
+@pytest.fixture
+def test_client_with_custom_spell():
+    """Create a test client with custom spell configuration."""
+    def create_custom_key_buffer_manager(spell_sequence=None):
+        if spell_sequence is None:
+            spell_sequence = ["x", "y", "z"]  # XXX: Default test spell
+        return KeyBufferManager(parsed_secret_spell=spell_sequence)
+    
+    def create_test_access_state():
+        return {}
+    
+    # XXX: Override the dependencies for testing
+    app.dependency_overrides[get_key_buffer_manager] = create_custom_key_buffer_manager
+    app.dependency_overrides[get_user_access_state] = create_test_access_state
+    
+    client = TestClient(app)
+    yield client
+    
+    # XXX: Clean up dependency overrides after test
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def test_client_with_spell(simple_spell):
+    """Create a test client with a specific spell sequence."""
+    def create_spell_manager():
+        return KeyBufferManager(parsed_secret_spell=simple_spell)
+    
+    def create_test_access_state():
+        return {}
+    
+    # XXX: Override dependencies with test-specific implementations
+    app.dependency_overrides[get_key_buffer_manager] = create_spell_manager
+    app.dependency_overrides[get_user_access_state] = create_test_access_state
+    
+    client = TestClient(app)
+    yield client
+    
+    # XXX: Clean up after test
+    app.dependency_overrides.clear()
+
+
 @pytest.fixture(autouse=True)
-def reset_global_state():
-    """Reset global state before each test."""
-    # Clear the user access granted dictionary
-    user_access_granted.clear()
-    # Clear all user buffers in the key buffer manager
-    key_buffer_manager._user_key_buffers.clear()
+def reset_dependency_overrides():
+    """Ensure dependency overrides are cleared between tests."""
     yield
-    # Cleanup after test
-    user_access_granted.clear()
-    key_buffer_manager._user_key_buffers.clear()
+    # XXX: Clean up any remaining dependency overrides
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture

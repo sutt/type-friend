@@ -2,7 +2,7 @@ import logging
 import os
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -36,7 +36,7 @@ if not PARSED_SECRET_SPELL:
 else:
     logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
 
-key_buffer_manager = KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
+# XXX: Global state for user access - could also be dependency injected
 user_access_granted = {}
 
 app = FastAPI()
@@ -51,6 +51,24 @@ class KeyPressEvent(BaseModel):
     uuid: str
 
 
+# XXX: Dependency injection for KeyBufferManager
+def get_key_buffer_manager() -> KeyBufferManager:
+    """
+    Dependency that provides the KeyBufferManager instance.
+    This allows for easy testing and configuration override.
+    """
+    return KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
+
+
+# XXX: Dependency injection for user access state
+def get_user_access_state() -> dict:
+    """
+    Dependency that provides the user access state dictionary.
+    This allows for easy testing and state isolation.
+    """
+    return user_access_granted
+
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
     """
@@ -60,7 +78,11 @@ async def read_root(request: Request):
 
 
 @app.post("/keypress")
-async def log_keypress(event: KeyPressEvent):
+async def log_keypress(
+    event: KeyPressEvent,
+    key_buffer_manager: KeyBufferManager = Depends(get_key_buffer_manager),
+    access_state: dict = Depends(get_user_access_state)
+):
     """
     Receives keypress events from the client and checks for the secret spell.
     """
@@ -73,7 +95,7 @@ async def log_keypress(event: KeyPressEvent):
     response_message = {"message": f"Key '{event.key}' received"}
 
     if key_buffer_manager.check_spell(user_uuid=event.uuid):
-        user_access_granted[event.uuid] = True
+        access_state[event.uuid] = True
         response_message["spell_successful"] = True
         response_message["message"] = (
             f"Key '{event.key}' received. Spell cast successfully!"
@@ -87,8 +109,10 @@ async def log_keypress(event: KeyPressEvent):
 
 @app.get("/protected_resource")
 async def get_protected_resource(
-    request: Request, session_id: str = None
-):  # Expect session_id as query param
+    request: Request, 
+    session_id: str = None,
+    access_state: dict = Depends(get_user_access_state)
+):
     """
     A protected resource, accessible only if the correct spell was cast by the session.
     """
@@ -98,7 +122,7 @@ async def get_protected_resource(
         )
         raise HTTPException(status_code=401, detail="Session ID required")
 
-    has_access = user_access_granted.get(session_id, False)
+    has_access = access_state.get(session_id, False)
 
     if not has_access:
         logger.warning(
