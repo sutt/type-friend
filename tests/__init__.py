@@ -1,0 +1,1 @@
+# XXX: Test package initialization
