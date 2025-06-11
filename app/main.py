@@ -33,6 +33,8 @@ if not PARSED_SECRET_SPELL:
         "APP_SECRET_SPELL is not defined, is empty, or contains only delimiters. "
         "The spell casting feature will be disabled as no valid spell sequence is configured."
     )
+else:
+    logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
 
 key_buffer_manager = KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
 user_access_granted = {}

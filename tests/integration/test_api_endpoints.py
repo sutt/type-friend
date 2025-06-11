@@ -94,13 +94,15 @@ class TestProtectedResourceEndpoint:
         assert response.status_code == 403
         assert response.json()["detail"] == "Access denied. Cast the secret spell correctly."
     
-    @pytest.mark.skip(reason="Protected resource test needs spell casting fix")
+    # @pytest.mark.skip(reason="Protected resource test needs spell casting fix")
+    @patch.dict('os.environ', {'APP_SECRET_SPELL': 'x,y,z'})
     def test_protected_resource_valid_access(self, test_client, test_uuid):
         """Test accessing protected resource after casting spell."""
         # First, cast the spell to gain access
-        keys = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
-                "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", 
-                "b", "a", "Enter"]
+        # keys = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
+        #         "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", 
+        #         "b", "a", "Enter"]
+        keys = ['x','y','z']
         
         for key in keys:
             payload = {"key": key, "uuid": test_uuid}
