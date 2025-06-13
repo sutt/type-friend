@@ -52,13 +52,20 @@ def test_access_state():
 @pytest.fixture
 def test_client_with_custom_spell():
     """Create a test client with custom spell configuration."""
+    # XXX: Create singleton instance for this test
+    test_manager_instance = None
+    test_access_state_instance = {}
+    
     def create_custom_key_buffer_manager(spell_sequence=None):
-        if spell_sequence is None:
-            spell_sequence = ["x", "y", "z"]  # XXX: Default test spell
-        return KeyBufferManager(parsed_secret_spell=spell_sequence)
+        nonlocal test_manager_instance
+        if test_manager_instance is None:
+            if spell_sequence is None:
+                spell_sequence = ["x", "y", "z"]  # XXX: Default test spell
+            test_manager_instance = KeyBufferManager(parsed_secret_spell=spell_sequence)
+        return test_manager_instance
     
     def create_test_access_state():
-        return {}
+        return test_access_state_instance
     
     # XXX: Override the dependencies for testing
     app.dependency_overrides[get_key_buffer_manager] = create_custom_key_buffer_manager
@@ -74,11 +81,18 @@ def test_client_with_custom_spell():
 @pytest.fixture
 def test_client_with_spell(simple_spell):
     """Create a test client with a specific spell sequence."""
+    # XXX: Create singleton instances for this test
+    test_manager_instance = None
+    test_access_state_instance = {}
+    
     def create_spell_manager():
-        return KeyBufferManager(parsed_secret_spell=simple_spell)
+        nonlocal test_manager_instance
+        if test_manager_instance is None:
+            test_manager_instance = KeyBufferManager(parsed_secret_spell=simple_spell)
+        return test_manager_instance
     
     def create_test_access_state():
-        return {}
+        return test_access_state_instance
     
     # XXX: Override dependencies with test-specific implementations
     app.dependency_overrides[get_key_buffer_manager] = create_spell_manager

@@ -128,12 +128,19 @@ class TestEnvironmentConfiguration:
         from main import app, get_key_buffer_manager, get_user_access_state
         from key_buffer_manager import KeyBufferManager
         
+        # XXX: Create singleton instances for this test
+        test_manager_instance = None
+        test_access_state_instance = {}
+        
         # XXX: Override with empty spell
         def create_empty_spell_manager():
-            return KeyBufferManager(parsed_secret_spell=[])
+            nonlocal test_manager_instance
+            if test_manager_instance is None:
+                test_manager_instance = KeyBufferManager(parsed_secret_spell=[])
+            return test_manager_instance
         
         def create_test_access_state():
-            return {}
+            return test_access_state_instance
         
         app.dependency_overrides[get_key_buffer_manager] = create_empty_spell_manager
         app.dependency_overrides[get_user_access_state] = create_test_access_state
