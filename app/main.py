@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, Depends
@@ -75,6 +76,7 @@ def get_key_buffer_manager() -> KeyBufferManager:
 
 
 _user_access_granted = {}
+_successful_spell_ips = {}
 
 
 def get_user_access_state() -> dict:
@@ -83,6 +85,14 @@ def get_user_access_state() -> dict:
     This allows for easy testing and state isolation.
     """
     return _user_access_granted
+
+
+def get_successful_spell_ips_state() -> dict:
+    """
+    Dependency that provides the successful spell IPs state dictionary.
+    This allows for easy testing and state isolation.
+    """
+    return _successful_spell_ips
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -95,9 +105,11 @@ async def read_root(request: Request):
 
 @app.post("/keypress", response_model=KeyPressResponse)
 async def log_keypress(
+    request: Request,
     event: KeyPressEvent,
     key_buffer_manager: KeyBufferManager = Depends(get_key_buffer_manager),
     access_state: dict = Depends(get_user_access_state),
+    successful_spell_ips: dict = Depends(get_successful_spell_ips_state),
 ):
     """
     Receives keypress events from the client and checks for the secret spell.
@@ -111,12 +123,40 @@ async def log_keypress(
     response_message = {"message": f"Key '{event.key}' received"}
 
     if key_buffer_manager.check_spell(user_uuid=event.uuid):
-        access_state[event.uuid] = True
-        response_message["spell_successful"] = True
-        response_message["message"] = (
-            f"Key '{event.key}' received. Spell cast successfully!"
-        )
-        logger.info(f"Secret spell cast successfully by UUID: {event.uuid}")
+        if not(request.client):
+            logger.warning(
+                f"Request.client cannot be identified for succesful secret spell cast successfully",
+                f"UUID: {event.uuid}"
+            )
+            raise HTTPException(
+                status_code=403, detail="Could not determine request IP; rejecting request."
+            )
+
+        if request.client.host in successful_spell_ips:
+            response_message["spell_successful"] = False
+            response_message["message"] = (
+                f"Key '{event.key}' received. Spell sequence correct, "
+                f"but IP {request.client.host} has already cast the spell. "
+                "Access not granted for this new session."
+            )
+            logger.warning(
+                f"Spell sequence correct for UUID {event.uuid} from IP {request.client.host}, "
+                "but this IP has already cast the spell."
+            )
+        else:
+            successful_spell_ips[request.client.host] = {
+                "user_uuid": event.uuid,
+                "cast_time": datetime.utcnow()
+            }
+            access_state[event.uuid] = True
+            response_message["spell_successful"] = True
+            response_message["message"] = (
+                f"Key '{event.key}' received. Spell cast successfully!"
+            )
+            logger.info(
+                f"Secret spell cast successfully by UUID: {event.uuid} "
+                f"from IP: {request.client.host}. Access granted."
+            )
     else:
         response_message["spell_successful"] = False
 
