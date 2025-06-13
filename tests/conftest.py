@@ -2,6 +2,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 # Import your app components
 import sys
@@ -120,6 +121,40 @@ def test_client_with_spell(simple_spell):
     app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
 
     client = TestClient(app)
+    yield client
+
+    # Clean up after test
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def test_client_with_proxy_spell(simple_spell):
+    """Create a test client with `X-Forwarded-For` client IP resolution."""
+    # Create singleton instances for this test
+    test_manager_instance = None
+    test_access_state_instance = {}
+    test_successful_spell_ips_instance = {}
+
+    def create_spell_manager():
+        nonlocal test_manager_instance
+        if test_manager_instance is None:
+            test_manager_instance = KeyBufferManager(parsed_secret_spell=simple_spell)
+        return test_manager_instance
+
+    def create_test_access_state():
+        return test_access_state_instance
+
+    def create_test_successful_spell_ips_state():
+        return test_successful_spell_ips_instance
+
+    # Override dependencies with test-specific implementations
+    app.dependency_overrides[get_key_buffer_manager] = create_spell_manager
+    app.dependency_overrides[get_user_access_state] = create_test_access_state
+    app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
+
+    # Wrap app with ProxyHeadersMiddleware to allow X-Forwarded-For to set request.client.host
+    proxied_app = ProxyHeadersMiddleware(app, trusted_hosts="*")
+    client = TestClient(proxied_app)
     yield client
 
     # Clean up after test
