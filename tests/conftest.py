@@ -8,7 +8,7 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "app"))
 
-from main import app, get_key_buffer_manager, get_user_access_state
+from main import app, get_key_buffer_manager, get_user_access_state, get_successful_spell_ips_state
 from key_buffer_manager import KeyBufferManager
 
 
@@ -66,6 +66,7 @@ def test_client_with_custom_spell():
     # Create singleton instance for this test
     test_manager_instance = None
     test_access_state_instance = {}
+    test_successful_spell_ips_instance = {}
 
     def create_custom_key_buffer_manager(spell_sequence=None):
         nonlocal test_manager_instance
@@ -78,9 +79,13 @@ def test_client_with_custom_spell():
     def create_test_access_state():
         return test_access_state_instance
 
+    def create_test_successful_spell_ips_state():
+        return test_successful_spell_ips_instance
+
     # Override the dependencies for testing
     app.dependency_overrides[get_key_buffer_manager] = create_custom_key_buffer_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
+    app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
 
     client = TestClient(app)
     yield client
@@ -95,6 +100,7 @@ def test_client_with_spell(simple_spell):
     # Create singleton instances for this test
     test_manager_instance = None
     test_access_state_instance = {}
+    test_successful_spell_ips_instance = {}
 
     def create_spell_manager():
         nonlocal test_manager_instance
@@ -105,9 +111,13 @@ def test_client_with_spell(simple_spell):
     def create_test_access_state():
         return test_access_state_instance
 
+    def create_test_successful_spell_ips_state():
+        return test_successful_spell_ips_instance
+
     # Override dependencies with test-specific implementations
     app.dependency_overrides[get_key_buffer_manager] = create_spell_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
+    app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
 
     client = TestClient(app)
     yield client
