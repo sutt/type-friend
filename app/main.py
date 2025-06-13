@@ -51,6 +51,7 @@ class KeyPressEvent(BaseModel):
 
 _key_buffer_manager_instance = None
 
+
 def get_key_buffer_manager() -> KeyBufferManager:
     """
     Dependency that provides the KeyBufferManager singleton instance.
@@ -58,10 +59,14 @@ def get_key_buffer_manager() -> KeyBufferManager:
     """
     global _key_buffer_manager_instance
     if _key_buffer_manager_instance is None:
-        _key_buffer_manager_instance = KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
+        _key_buffer_manager_instance = KeyBufferManager(
+            parsed_secret_spell=PARSED_SECRET_SPELL
+        )
     return _key_buffer_manager_instance
 
+
 _user_access_granted = {}
+
 
 def get_user_access_state() -> dict:
     """
@@ -83,7 +88,7 @@ async def read_root(request: Request):
 async def log_keypress(
     event: KeyPressEvent,
     key_buffer_manager: KeyBufferManager = Depends(get_key_buffer_manager),
-    access_state: dict = Depends(get_user_access_state)
+    access_state: dict = Depends(get_user_access_state),
 ):
     """
     Receives keypress events from the client and checks for the secret spell.
@@ -111,9 +116,9 @@ async def log_keypress(
 
 @app.get("/protected_resource")
 async def get_protected_resource(
-    request: Request, 
+    request: Request,
     session_id: str = None,
-    access_state: dict = Depends(get_user_access_state)
+    access_state: dict = Depends(get_user_access_state),
 ):
     """
     A protected resource, accessible only if the correct spell was cast by the session.

@@ -5,7 +5,8 @@ from unittest.mock import patch
 
 # Import your app components
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'app'))
+
+sys.path.append(os.path.join(os.path.dirname(__file__), "..", "app"))
 
 from main import app, get_key_buffer_manager, get_user_access_state
 from key_buffer_manager import KeyBufferManager
@@ -26,9 +27,19 @@ def simple_spell():
 @pytest.fixture
 def konami_code_spell():
     """The actual Konami code from .env.example."""
-    return ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", 
-            "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", 
-            "b", "a", "Enter"]
+    return [
+        "ArrowUp",
+        "ArrowUp",
+        "ArrowDown",
+        "ArrowDown",
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowLeft",
+        "ArrowRight",
+        "b",
+        "a",
+        "Enter",
+    ]
 
 
 @pytest.fixture
@@ -55,7 +66,7 @@ def test_client_with_custom_spell():
     # Create singleton instance for this test
     test_manager_instance = None
     test_access_state_instance = {}
-    
+
     def create_custom_key_buffer_manager(spell_sequence=None):
         nonlocal test_manager_instance
         if test_manager_instance is None:
@@ -63,17 +74,17 @@ def test_client_with_custom_spell():
                 spell_sequence = ["x", "y", "z"]
             test_manager_instance = KeyBufferManager(parsed_secret_spell=spell_sequence)
         return test_manager_instance
-    
+
     def create_test_access_state():
         return test_access_state_instance
-    
+
     # Override the dependencies for testing
     app.dependency_overrides[get_key_buffer_manager] = create_custom_key_buffer_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
-    
+
     client = TestClient(app)
     yield client
-    
+
     # Clean up dependency overrides after test
     app.dependency_overrides.clear()
 
@@ -84,23 +95,23 @@ def test_client_with_spell(simple_spell):
     # Create singleton instances for this test
     test_manager_instance = None
     test_access_state_instance = {}
-    
+
     def create_spell_manager():
         nonlocal test_manager_instance
         if test_manager_instance is None:
             test_manager_instance = KeyBufferManager(parsed_secret_spell=simple_spell)
         return test_manager_instance
-    
+
     def create_test_access_state():
         return test_access_state_instance
-    
+
     # Override dependencies with test-specific implementations
     app.dependency_overrides[get_key_buffer_manager] = create_spell_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
-    
+
     client = TestClient(app)
     yield client
-    
+
     # Clean up after test
     app.dependency_overrides.clear()
 
