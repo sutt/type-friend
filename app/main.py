@@ -36,8 +36,6 @@ if not PARSED_SECRET_SPELL:
 else:
     logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
 
-# XXX: Global state for user access - could also be dependency injected
-user_access_granted = {}
 
 app = FastAPI()
 
@@ -51,10 +49,8 @@ class KeyPressEvent(BaseModel):
     uuid: str
 
 
-# XXX: Create singleton instance at module level
 _key_buffer_manager_instance = None
 
-# XXX: Dependency injection for KeyBufferManager
 def get_key_buffer_manager() -> KeyBufferManager:
     """
     Dependency that provides the KeyBufferManager singleton instance.
@@ -65,14 +61,14 @@ def get_key_buffer_manager() -> KeyBufferManager:
         _key_buffer_manager_instance = KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
     return _key_buffer_manager_instance
 
+_user_access_granted = {}
 
-# XXX: Dependency injection for user access state
 def get_user_access_state() -> dict:
     """
     Dependency that provides the user access state dictionary.
     This allows for easy testing and state isolation.
     """
-    return user_access_granted
+    return _user_access_granted
 
 
 @app.get("/", response_class=HTMLResponse)
