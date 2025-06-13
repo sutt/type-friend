@@ -49,6 +49,15 @@ class KeyPressEvent(BaseModel):
     uuid: str
 
 
+class KeyPressResponse(BaseModel):
+    message: str
+    spell_successful: bool
+
+
+class ProtectedResourceResponse(BaseModel):
+    message: str
+
+
 _key_buffer_manager_instance = None
 
 
@@ -84,7 +93,7 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.post("/keypress")
+@app.post("/keypress", response_model=KeyPressResponse)
 async def log_keypress(
     event: KeyPressEvent,
     key_buffer_manager: KeyBufferManager = Depends(get_key_buffer_manager),
@@ -114,7 +123,7 @@ async def log_keypress(
     return response_message
 
 
-@app.get("/protected_resource")
+@app.get("/protected_resource", response_model=ProtectedResourceResponse)
 async def get_protected_resource(
     request: Request,
     session_id: str = None,
