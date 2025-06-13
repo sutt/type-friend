@@ -51,13 +51,19 @@ class KeyPressEvent(BaseModel):
     uuid: str
 
 
+# XXX: Create singleton instance at module level
+_key_buffer_manager_instance = None
+
 # XXX: Dependency injection for KeyBufferManager
 def get_key_buffer_manager() -> KeyBufferManager:
     """
-    Dependency that provides the KeyBufferManager instance.
-    This allows for easy testing and configuration override.
+    Dependency that provides the KeyBufferManager singleton instance.
+    This ensures state persists across requests.
     """
-    return KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
+    global _key_buffer_manager_instance
+    if _key_buffer_manager_instance is None:
+        _key_buffer_manager_instance = KeyBufferManager(parsed_secret_spell=PARSED_SECRET_SPELL)
+    return _key_buffer_manager_instance
 
 
 # XXX: Dependency injection for user access state
