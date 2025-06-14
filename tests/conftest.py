@@ -9,7 +9,12 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "app"))
 
-from main import app, get_key_buffer_manager, get_user_access_state, get_successful_spell_ips_state
+from main import (
+    app,
+    get_key_buffer_manager,
+    get_user_access_state,
+    get_successful_spell_ips_state,
+)
 from key_buffer_manager import KeyBufferManager
 
 
@@ -86,7 +91,9 @@ def test_client_with_custom_spell():
     # Override the dependencies for testing
     app.dependency_overrides[get_key_buffer_manager] = create_custom_key_buffer_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
-    app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
+    app.dependency_overrides[get_successful_spell_ips_state] = (
+        create_test_successful_spell_ips_state
+    )
 
     client = TestClient(app)
     yield client
@@ -118,7 +125,9 @@ def test_client_with_spell(simple_spell):
     # Override dependencies with test-specific implementations
     app.dependency_overrides[get_key_buffer_manager] = create_spell_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
-    app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
+    app.dependency_overrides[get_successful_spell_ips_state] = (
+        create_test_successful_spell_ips_state
+    )
 
     client = TestClient(app)
     yield client
@@ -150,7 +159,9 @@ def test_client_with_proxy_spell(simple_spell):
     # Override dependencies with test-specific implementations
     app.dependency_overrides[get_key_buffer_manager] = create_spell_manager
     app.dependency_overrides[get_user_access_state] = create_test_access_state
-    app.dependency_overrides[get_successful_spell_ips_state] = create_test_successful_spell_ips_state
+    app.dependency_overrides[get_successful_spell_ips_state] = (
+        create_test_successful_spell_ips_state
+    )
 
     # Wrap app with ProxyHeadersMiddleware to allow X-Forwarded-For to set request.client.host
     proxied_app = ProxyHeadersMiddleware(app, trusted_hosts="*")

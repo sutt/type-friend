@@ -123,13 +123,14 @@ async def log_keypress(
     response_message = {"message": f"Key '{event.key}' received"}
 
     if key_buffer_manager.check_spell(user_uuid=event.uuid):
-        if not(request.client):
+        if not (request.client):
             logger.warning(
                 f"Request.client cannot be identified for succesful secret spell cast successfully",
-                f"UUID: {event.uuid}"
+                f"UUID: {event.uuid}",
             )
             raise HTTPException(
-                status_code=403, detail="Could not determine request IP; rejecting request."
+                status_code=403,
+                detail="Could not determine request IP; rejecting request.",
             )
 
         if request.client.host in successful_spell_ips:
@@ -146,7 +147,7 @@ async def log_keypress(
         else:
             successful_spell_ips[request.client.host] = {
                 "user_uuid": event.uuid,
-                "cast_time": datetime.utcnow()
+                "cast_time": datetime.utcnow(),
             }
             access_state[event.uuid] = True
             response_message["spell_successful"] = True

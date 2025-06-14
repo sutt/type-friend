@@ -89,7 +89,7 @@ class TestKeypressEndpoint:
                 "/keypress", json=payload, headers={"X-Forwarded-For": shared_ip}
             )
             assert response.status_code == 200
-        
+
         final_response_uuid1 = response.json()
         assert final_response_uuid1["spell_successful"] is True
         assert "Spell cast successfully!" in final_response_uuid1["message"]
@@ -101,27 +101,31 @@ class TestKeypressEndpoint:
                 "/keypress", json=payload, headers={"X-Forwarded-For": shared_ip}
             )
             assert response.status_code == 200
-        
+
         final_response_uuid2 = response.json()
         assert final_response_uuid2["spell_successful"] is False
-        assert f"IP {shared_ip} has already cast the spell" in final_response_uuid2["message"]
+        assert (
+            f"IP {shared_ip} has already cast the spell"
+            in final_response_uuid2["message"]
+        )
 
         # Verify access to protected resource
         # UUID1 should have access
         protected_response_uuid1 = test_client_with_proxy_spell.get(
             f"/protected_resource?session_id={uuid1}",
-            headers={"X-Forwarded-For": shared_ip} # IP for logging, not access control here
+            headers={
+                "X-Forwarded-For": shared_ip
+            },  # IP for logging, not access control here
         )
         assert protected_response_uuid1.status_code == 200
 
         # UUID2 should NOT have access
         protected_response_uuid2 = test_client_with_proxy_spell.get(
             f"/protected_resource?session_id={uuid2}",
-            headers={"X-Forwarded-For": shared_ip}
+            headers={"X-Forwarded-For": shared_ip},
         )
         assert protected_response_uuid2.status_code == 403
         assert "Access denied" in protected_response_uuid2.json()["detail"]
-
 
     def test_keypress_spell_cast_different_ips_different_uuids(
         self, test_client_with_proxy_spell, simple_spell
@@ -142,7 +146,7 @@ class TestKeypressEndpoint:
                 "/keypress", json=payload, headers={"X-Forwarded-For": ip1}
             )
             assert response.status_code == 200
-        
+
         final_response_uuid1 = response.json()
         assert final_response_uuid1["spell_successful"] is True
         assert "Spell cast successfully!" in final_response_uuid1["message"]
@@ -154,23 +158,21 @@ class TestKeypressEndpoint:
                 "/keypress", json=payload, headers={"X-Forwarded-For": ip2}
             )
             assert response.status_code == 200
-            
+
         final_response_uuid2 = response.json()
         assert final_response_uuid2["spell_successful"] is True
         assert "Spell cast successfully!" in final_response_uuid2["message"]
-        
+
         # Verify access to protected resource for both
         # UUID1 from IP1 should have access
         protected_response_uuid1 = test_client_with_proxy_spell.get(
-            f"/protected_resource?session_id={uuid1}",
-            headers={"X-Forwarded-For": ip1}
+            f"/protected_resource?session_id={uuid1}", headers={"X-Forwarded-For": ip1}
         )
         assert protected_response_uuid1.status_code == 200
 
         # UUID2 from IP2 should have access
         protected_response_uuid2 = test_client_with_proxy_spell.get(
-            f"/protected_resource?session_id={uuid2}",
-            headers={"X-Forwarded-For": ip2}
+            f"/protected_resource?session_id={uuid2}", headers={"X-Forwarded-For": ip2}
         )
         assert protected_response_uuid2.status_code == 200
 
