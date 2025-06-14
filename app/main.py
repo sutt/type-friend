@@ -15,6 +15,7 @@ from key_buffer_manager import KeyBufferManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(SCRIPT_DIR, "static")
 TEMPLATES_DIR = os.path.join(SCRIPT_DIR, "templates")
@@ -28,7 +29,6 @@ PARSED_SECRET_SPELL = (
     if SECRET_SPELL_FROM_ENV
     else []
 )
-
 if not PARSED_SECRET_SPELL:
     logger.warning(
         "APP_SECRET_SPELL is not defined, is empty, or contains only delimiters. "
@@ -45,21 +45,9 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
-class KeyPressEvent(BaseModel):
-    key: str
-    uuid: str
-
-
-class KeyPressResponse(BaseModel):
-    message: str
-    spell_successful: bool
-
-
-class ProtectedResourceResponse(BaseModel):
-    message: str
-
-
 _key_buffer_manager_instance = None
+_user_access_granted_instance = None
+_successful_spell_ips_instance = None
 
 
 def get_key_buffer_manager() -> KeyBufferManager:
@@ -73,10 +61,6 @@ def get_key_buffer_manager() -> KeyBufferManager:
             parsed_secret_spell=PARSED_SECRET_SPELL
         )
     return _key_buffer_manager_instance
-
-
-_user_access_granted_instance = None
-_successful_spell_ips_instance = None
 
 
 def get_user_access_state() -> dict:
@@ -99,6 +83,20 @@ def get_successful_spell_ips_state() -> dict:
     if _successful_spell_ips_instance is None:
         _successful_spell_ips_instance = {}
     return _successful_spell_ips_instance
+
+
+class KeyPressEvent(BaseModel):
+    key: str
+    uuid: str
+
+
+class KeyPressResponse(BaseModel):
+    message: str
+    spell_successful: bool
+
+
+class ProtectedResourceResponse(BaseModel):
+    message: str
 
 
 @app.get("/", response_class=HTMLResponse)
