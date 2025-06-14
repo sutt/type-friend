@@ -75,8 +75,8 @@ def get_key_buffer_manager() -> KeyBufferManager:
     return _key_buffer_manager_instance
 
 
-_user_access_granted = {}
-_successful_spell_ips = {}
+_user_access_granted_instance = None
+_successful_spell_ips_instance = None
 
 
 def get_user_access_state() -> dict:
@@ -84,7 +84,10 @@ def get_user_access_state() -> dict:
     Dependency that provides the user access state dictionary.
     This allows for easy testing and state isolation.
     """
-    return _user_access_granted
+    global _user_access_granted_instance
+    if _user_access_granted_instance is None:
+        _user_access_granted_instance = {}
+    return _user_access_granted_instance
 
 
 def get_successful_spell_ips_state() -> dict:
@@ -92,7 +95,10 @@ def get_successful_spell_ips_state() -> dict:
     Dependency that provides the successful spell IPs state dictionary.
     This allows for easy testing and state isolation.
     """
-    return _successful_spell_ips
+    global _successful_spell_ips_instance
+    if _successful_spell_ips_instance is None:
+        _successful_spell_ips_instance = {}
+    return _successful_spell_ips_instance
 
 
 @app.get("/", response_class=HTMLResponse)
