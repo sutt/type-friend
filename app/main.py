@@ -203,5 +203,13 @@ async def get_protected_resource(
 
 if __name__ == "__main__":
     import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    
+    api_debug = bool(int(os.getenv("API_DEBUG", False)))
+    forwarded_allow_ips = str(os.getenv("FORWARDED_ALLOW_IPS", "172.17.0.1"))
+    
+    uvicorn.run(
+        app, 
+        host="0.0.0.0", 
+        port=8000,
+        forwarded_allow_ips=(None if api_debug else forwarded_allow_ips),
+    )
