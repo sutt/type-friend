@@ -25,4 +25,4 @@ EXPOSE 8000
 # Run main.py when the container launches
 # The command refers to app.main:app because WORKDIR is /app_container
 # and the app module will be in /app_container/app
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "app/main.py"]
