@@ -6,7 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', async (event) => {
         const key = event.key;
         console.log(`Key pressed: ${key}`);
-        pressedKeyElement.textContent = key;
+        pressedKeyElement.textContent = key.toLowerCase();
+        //toLowerCase b/c runes font has no upper case for some letters
 
         try {
             const response = await fetch('/keypress', {

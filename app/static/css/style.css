@@ -65,3 +65,32 @@ h2 {
 #protected-link:hover {
     background-color: #218838; /* Darker green */
 }
+
+/* XXX: Footer Styles */
+footer {
+    /* background-color: rgba(0, 0, 0, 0.7); XXX: Semi-transparent dark background */
+    color: #fff;
+    padding: 10px 0; /* XXX: Increased padding for better spacing */
+    text-align: right;
+    width: 100%;
+    margin-top: auto; /* XXX: Pushes footer to the bottom in a flex container (body) */
+    box-sizing: border-box;
+    font-size: 0.9em; /* XXX: Base font size for footer */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* XXX: Text shadow for readability */
+}
+
+.footer-content p {
+    margin: 0 0 10px 0;
+}
+
+.social-links a {
+    color: #fff;
+    margin: 0 12px; /* XXX: Increased margin for better icon spacing */
+    font-size: 1.8em; /* XXX: Icon size */
+    text-decoration: none;
+    transition: color 0.3s ease; /* XXX: Smooth transition for hover effect */
+}
+
+.social-links a:hover {
+    color: #ffc107; /* XXX: Amber color on hover, matches pressed-key */
+}
