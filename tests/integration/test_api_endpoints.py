@@ -12,7 +12,7 @@ class TestRootEndpoint:
 
         assert response.status_code == 200
         assert response.headers["content-type"] == "text/html; charset=utf-8"
-        assert "KeyPress Event Tracker" in response.text
+        assert "THE DOORS APPEAR LOCKED" in response.text
         assert "protected-link" in response.text
 
 
