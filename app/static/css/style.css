@@ -1,25 +1,38 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f4f4f4;
-    color: #333;
+    margin: 0; /* XXX: Remove default margin */
+    background-image: url('/static/img/gandalf-at-door.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh; /* XXX: Ensure body takes full viewport height */
+    color: #fff; /* XXX: Default text color to white for contrast */
+    display: flex; /* XXX: Use flexbox for centering content */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center; /* XXX: Center text within elements */
+    padding: 20px; /* XXX: Add some padding for content */
+    box-sizing: border-box; /* XXX: Include padding in width/height calculation */
 }
 
 h1 {
-    color: #0056b3;
+    color: #ffffff; /* XXX: Change h1 color to white */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* XXX: Add text shadow for readability */
 }
 
 #key-display {
     margin-top: 20px;
     padding: 10px;
-    background-color: #fff;
-    border: 1px solid #ddd;
+    background-color: rgba(0, 0, 0, 0.5); /* XXX: Semi-transparent background */
+    border: 1px solid #ccc; /* XXX: Lighter border */
     border-radius: 4px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* XXX: Add text shadow for readability */
 }
 
 #pressed-key {
     font-weight: bold;
-    color: #d9534f;
+    color: #ffc107; /* XXX: Bright color for pressed key, e.g., amber */
 }
 
 #protected-link {
