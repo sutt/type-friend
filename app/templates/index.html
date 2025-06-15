@@ -9,15 +9,16 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <h1>THE DOORS APPEAR LOCKED</h1>
+    <h1 id="door-status">THE DOORS APPEAR LOCKED</h1>
+    
+    <button id="protected-link" style="display:none;">Enter the Mines</button>
+    
     <h2 class="runes">
-        friend - Enter
+        friend - enter
     </h2>
+    
     <div id="key-display"><span id="pressed-key" class="runes"></span></div>
-    <button id="protected-link" style="display:none;">Access Protected Resource</button>
-
-    <script src="/static/js/script.js"></script>
-
+    
     <footer>
         <div class="footer-content">
             <div class="social-links">
@@ -30,5 +31,6 @@
             </div>
         </div>
     </footer>
+    <script src="/static/js/script.js"></script>
 </body>
 </html>

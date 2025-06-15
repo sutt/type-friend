@@ -16,10 +16,10 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* XXX: Align content to the top */
+    justify-content: flex-start;
     text-align: center;
     padding: 20px;
-    padding-top: 25vh; /* XXX: Start content at 25% of viewport height */
+    padding-top: 25vh;
     box-sizing: border-box;
 }
 
@@ -28,8 +28,19 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
+#door-status {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 2s ease-in-out, visibility 0s linear 2s;
+}
+
+#door-status.is-fading-out {
+    opacity: 0;
+    visibility: hidden;
+}
+
 h2 {
-    color: yellow;
+    color: #ffffff;
 }
 
 .runes {
@@ -39,44 +50,57 @@ h2 {
 #key-display {
     margin-top: 20px;
     padding: 10px;
-    background-color: rgba(0, 0, 0, 0.5); /* XXX: Semi-transparent background */
-    border: 1px solid #ccc; /* XXX: Lighter border */
+    background-color: rgba(0, 0, 0, 0.5);
+    border: 1px solid #ccc;
     border-radius: 4px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* XXX: Add text shadow for readability */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+}
+
+#key-display.visible {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.2s ease-in-out, visibility 0s linear 0s;
+}
+
+#key-display.is-fading-out {
+    opacity: 0;
+    transition: opacity 3s ease-in-out, visibility 0s linear 3s;
 }
 
 #pressed-key {
     font-weight: bold;
-    color: #ffc107; /* XXX: Bright color for pressed key, e.g., amber */
+    color: #ffc107;
 }
 
 #protected-link {
-    display: none; /* Hidden by default */
+    display: none;
     margin-top: 20px;
     padding: 10px 15px;
     font-size: 1em;
     color: white;
-    background-color: #28a745; /* Green */
+    background-color: #28a745;
     border: none;
     border-radius: 4px;
     cursor: pointer;
 }
 
 #protected-link:hover {
-    background-color: #218838; /* Darker green */
+    background-color: #218838;
 }
 
-/* XXX: Footer Styles */
 footer {
     /* background-color: rgba(0, 0, 0, 0.7); XXX: Semi-transparent dark background */
     color: #fff;
-    padding: 10px 0; /* XXX: Increased padding for better spacing */
+    padding: 10px 0;
     text-align: right;
     width: 100%;
-    margin-top: auto; /* XXX: Pushes footer to the bottom in a flex container (body) */
+    margin-top: auto;
     box-sizing: border-box;
-    font-size: 0.9em; /* XXX: Base font size for footer */
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* XXX: Text shadow for readability */
+    font-size: 0.9em;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .footer-content p {
@@ -85,12 +109,12 @@ footer {
 
 .social-links a {
     color: #fff;
-    margin: 0 12px; /* XXX: Increased margin for better icon spacing */
-    font-size: 1.8em; /* XXX: Icon size */
+    margin: 0 12px;
+    font-size: 1.8em;
     text-decoration: none;
-    transition: color 0.3s ease; /* XXX: Smooth transition for hover effect */
+    transition: color 0.3s ease;
 }
 
 .social-links a:hover {
-    color: #ffc107; /* XXX: Amber color on hover, matches pressed-key */
+    color: #ffc107;
 }
