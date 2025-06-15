@@ -1,16 +1,20 @@
 #!/bin/bash
-IMAGE_NAME="type-friend:latest"
-CONTAINER_NAME="type-friend-container"
 
-echo "Building image $IMAGE_NAME..."
-docker build -t "$IMAGE_NAME" .
+set -e
+set -a
 
-echo "Stopping and removing container $CONTAINER_NAME if it exists..."
-docker stop "$CONTAINER_NAME" && docker rm "$CONTAINER_NAME" || true
+API_IMAGE_NAME="type-friend:latest"
+API_CONTAINER_NAME="type-friend-container"
+API_MAPPED_PORT=8000
 
-echo "Running new container $CONTAINER_NAME from image $IMAGE_NAME..."
-# XXX: Run in detached mode (-d) so the script can complete while the container runs in the background.
-# XXX: Adjust port mapping (-p) if your application uses a different port.
-docker run -d --name "$CONTAINER_NAME" -p 8000:8000 "$IMAGE_NAME"
+if [ -f .env ]; then
+  . ./.env
+else
+    echo "WARNING: could not find .env file. Running with all default args"
+fi
 
-echo "Deployment complete. Container $CONTAINER_NAME should be running."
+docker build -t "$API_IMAGE_NAME" .
+docker stop "$API_CONTAINER_NAME" && docker rm "$API_CONTAINER_NAME" || true
+docker run -d --name "$API_CONTAINER_NAME" -p "$API_MAPPED_PORT":8000 "$API_IMAGE_NAME"
+echo "Deploy complete. Container '$API_CONTAINER_NAME' running on port: $API_MAPPED_PORT"
+
