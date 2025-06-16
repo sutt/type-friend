@@ -125,3 +125,17 @@ footer {
         padding-top: 10vh;
     }
 }
+
+/* XXX: Styles for the mobile input form */
+#mobile-form {
+    margin-top: 20px;
+    display: none; /* XXX: Initially hidden, JS will display it for mobile */
+}
+
+#mobile-form label {
+    color: white;
+}
+
+#mobile-input {
+    margin-right: 10px;
+}
