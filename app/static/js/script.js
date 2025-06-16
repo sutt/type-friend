@@ -2,8 +2,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const pressedKeyElement = document.getElementById('pressed-key');
     const keyDisplayElement = document.getElementById('key-display');
     const doorStatusElement = document.getElementById('door-status');
+    const testInputElement = document.getElementById('test-input'); // XXX: Get the test input element
     let userSessionId = crypto.randomUUID();
     console.log(`User session ID: ${userSessionId}`);
+
+    // XXX: Prevent form submission on Enter key for the temporary test input
+    if (testInputElement) {
+        testInputElement.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                // XXX: Optionally, you might want to blur the input or do something else
+                // XXX: console.log('Enter pressed in test input, submission prevented.');
+            }
+        });
+    }
 
     // XXX: Get the hidden input field for mobile keyboard
     const mobileKeyboardTrigger = document.getElementById('mobile-keyboard-trigger');
