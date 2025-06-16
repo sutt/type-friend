@@ -118,3 +118,10 @@ footer {
 .social-links a:hover {
     color: #ffc107;
 }
+
+/* XXX: Adjust padding-top for mobile devices */
+@media (max-width: 768px) {
+    body {
+        padding-top: 10vh;
+    }
+}
