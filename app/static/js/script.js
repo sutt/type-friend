@@ -2,8 +2,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const pressedKeyElement = document.getElementById('pressed-key');
     const keyDisplayElement = document.getElementById('key-display');
     const doorStatusElement = document.getElementById('door-status');
+    const mobileFormElement = document.getElementById('mobile-form');
+    const mobileInputElement = document.getElementById('mobile-input');
     let userSessionId = crypto.randomUUID();
     console.log(`User session ID: ${userSessionId}`);
+
+    
+    //Detect if the device is likely a mobile device
+    const isLikelyMobile = window.matchMedia("(pointer: coarse)").matches;
+    
+    if (isLikelyMobile) {
+        
+        // Prevent form submission on Enter key for the temporary test input
+        if (mobileInputElement) {
+            mobileInputElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                }
+            });
+        }
+        
+        // Display mobile form
+        if (mobileFormElement) {
+            mobileFormElement.style.display = 'block'
+        }
+    }
 
     let fadeInAndHoldTimeoutId = null;
     let fadeOutCleanupTimeoutId = null;
@@ -58,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = `/protected_resource?session_id=${userSessionId}`;
                      };
                   }
-              }, 2000);
+              }, 500);
             }
         } catch (error) {
             console.error('Error sending keypress event:', error);
