@@ -7,25 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
     let userSessionId = crypto.randomUUID();
     console.log(`User session ID: ${userSessionId}`);
 
-    // XXX: Detect if the device is likely a mobile device
     const isLikelyMobile = window.matchMedia("(pointer: coarse)").matches;
 
     let fadeInAndHoldTimeoutId = null;
     let fadeOutCleanupTimeoutId = null;
 
-    // XXX: Centralized function to process the key, update UI, and send to server
     async function processAndSendKey(keyToSend) {
-        // XXX: Ignore "Unidentified" keys or empty keys
         if (!keyToSend || keyToSend === "Unidentified") {
-            console.log(`Key ignored by processAndSendKey: ${keyToSend}`);
             return;
         }
 
-        console.log(`Processing key for server: ${keyToSend}`);
-        // XXX: toLowerCase b/c runes font has no upper case for some letters
+        // toLowerCase because font doesnt have upper case for some letters
         pressedKeyElement.textContent = keyToSend.toLowerCase();
 
-        // XXX: Key display visibility logic
         clearTimeout(fadeInAndHoldTimeoutId);
         clearTimeout(fadeOutCleanupTimeoutId);
         keyDisplayElement.classList.remove('is-fading-out');
@@ -36,10 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
             fadeOutCleanupTimeoutId = setTimeout(() => {
                 keyDisplayElement.classList.remove('visible');
                 keyDisplayElement.classList.remove('is-fading-out');
-            }, 3000); // XXX: Corresponds to fade-out duration in CSS
-        }, 500); // XXX: Hold duration before fading
+            }, 3000); 
+        }, 500);
 
-        // XXX: Server communication
         try {
             const response = await fetch('/keypress', {
                 method: 'POST',
@@ -67,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             window.location.href = `/protected_resource?session_id=${userSessionId}`;
                         };
                     }
-                }, 500); // XXX: Delay to allow fade-out animation
+                }, 500);
             }
         } catch (error) {
             console.error('Error sending keypress event:', error);
@@ -80,23 +73,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (mobileInputElement) {
-            // XXX: Prevent form submission on Enter key for the mobile input
             mobileInputElement.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    // XXX: The global keydown listener will handle sending "Enter"
                 }
             });
 
-            // XXX: Use 'input' event for mobile to reliably get character data
+            // Use 'input' event for mobile to reliably get character data
             mobileInputElement.addEventListener('input', () => {
                 const charTyped = mobileInputElement.value;
                 if (charTyped) {
-                    // XXX: Send each character as it's typed
-                    // XXX: This assumes single character inputs are desired per 'input' event.
-                    // XXX: For multi-character words, this would send them one by one.
-                    processAndSendKey(charTyped.slice(-1)); // XXX: Send the last character typed
-                    mobileInputElement.value = ''; // XXX: Clear input field after processing
+                    processAndSendKey(charTyped.slice(-1));
+                    mobileInputElement.value = '';
                 }
             });
         }
@@ -107,20 +95,12 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log(`Keydown event: key='${key}', target='${event.target.id}', activeElement='${document.activeElement && document.activeElement.id}'`);
 
         if (isLikelyMobile && document.activeElement === mobileInputElement) {
-            // XXX: On mobile, if focus is on our mobileInput:
-            // XXX: Character inputs are handled by the 'input' event listener on mobileInputElement.
-            // XXX: This 'keydown' listener should only process special keys (e.g., "Enter", "ArrowUp").
-            if (key.length > 1 && key !== "Unidentified") { // XXX: e.g., "Enter", "ArrowUp"
+            // This 'keydown' listener should only process special keys (e.g., "Enter", "ArrowUp").
+            if (key.length > 1 && key !== "Unidentified") {
                 processAndSendKey(key);
             }
-            // XXX: If key is "Unidentified" or a single character (e.g. "a", "1") from mobileInput,
-            // XXX: we do nothing here; 'input' event handles characters, "Unidentified" is ignored by processAndSendKey.
             return; 
         }
-
-        // XXX: For desktop, or mobile when mobileInput is not focused:
-        // XXX: process all keys via keydown.
-        // XXX: processAndSendKey will filter out "Unidentified".
         processAndSendKey(key);
     });
 });
