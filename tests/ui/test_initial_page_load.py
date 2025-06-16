@@ -36,3 +36,38 @@ def test_initial_page_load_elements_visibility(page: Page):
     # It has id="key-display"
     key_display_area = page.locator("#key-display")
     expect(key_display_area).to_be_hidden()
+
+    # 6. Check that the mobile form is initially hidden on desktop
+    mobile_form = page.locator("form#mobile-form")
+    expect(mobile_form).to_be_hidden()
+
+
+@pytest.mark.ui
+def test_mobile_form_visible_on_mobile(playwright):
+    """
+    Test that the mobile form is visible when the page is loaded on a mobile device.
+    """
+    iphone = playwright.devices["iPhone 13 Pro"]
+    browser = playwright.chromium.launch()
+    context = browser.new_context(**iphone)
+    page = context.new_page()
+    page.goto(BASE_URL + "/")
+
+    mobile_form = page.locator("form#mobile-form")
+    expect(mobile_form).to_be_visible()
+
+    context.close()
+    browser.close()
+
+
+@pytest.mark.ui
+def test_mobile_form_hidden_on_desktop(page: Page):
+    """
+    Test that the mobile form is hidden when the page is loaded on a desktop device.
+    This is also covered by test_initial_page_load_elements_visibility,
+    but this test is more specific.
+    """
+    page.goto(BASE_URL + "/")
+
+    mobile_form = page.locator("form#mobile-form")
+    expect(mobile_form).to_be_hidden()
