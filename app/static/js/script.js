@@ -2,45 +2,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const pressedKeyElement = document.getElementById('pressed-key');
     const keyDisplayElement = document.getElementById('key-display');
     const doorStatusElement = document.getElementById('door-status');
-    const testInputElement = document.getElementById('test-input'); // XXX: Get the test input element
+    const mobileFormElement = document.getElementById('mobile-form');
+    const mobileInputElement = document.getElementById('mobile-input');
     let userSessionId = crypto.randomUUID();
     console.log(`User session ID: ${userSessionId}`);
 
-    // XXX: Prevent form submission on Enter key for the temporary test input
-    if (testInputElement) {
-        testInputElement.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                // XXX: Optionally, you might want to blur the input or do something else
-                // XXX: console.log('Enter pressed in test input, submission prevented.');
-            }
-        });
-    }
-
-    // XXX: Get the hidden input field for mobile keyboard
-    const mobileKeyboardTrigger = document.getElementById('mobile-keyboard-trigger');
-    // XXX: Detect if the device is likely a mobile device (has coarse pointer, e.g., touch)
+    
+    //Detect if the device is likely a mobile device
     const isLikelyMobile = window.matchMedia("(pointer: coarse)").matches;
-
-    if (isLikelyMobile && mobileKeyboardTrigger) {
-        // XXX: Set initial focus to the hidden input on mobile to bring up the virtual keyboard
-        mobileKeyboardTrigger.focus();
-
-        // XXX: Add a click listener to the body to re-focus the hidden input
-        // XXX: if the user taps on a non-interactive part of the page.
-        document.body.addEventListener('click', (event) => {
-            const targetElement = event.target;
-            // XXX: Re-focus if the click is not on the input itself, a button, a link,
-            // XXX: or an element within a button or link.
-            if (targetElement !== mobileKeyboardTrigger &&
-                targetElement.tagName !== 'BUTTON' &&
-                targetElement.tagName !== 'A' &&
-                !targetElement.closest('button') &&
-                !targetElement.closest('a')
-               ) {
-                mobileKeyboardTrigger.focus();
-            }
-        });
+    
+    if (isLikelyMobile) {
+        
+        // Prevent form submission on Enter key for the temporary test input
+        if (mobileInputElement) {
+            mobileInputElement.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                }
+            });
+        }
+        
+        // Display mobile form
+        if (mobileFormElement) {
+            mobileFormElement.style.display = 'block'
+        }
     }
 
     let fadeInAndHoldTimeoutId = null;
@@ -96,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.location.href = `/protected_resource?session_id=${userSessionId}`;
                      };
                   }
-              }, 2000);
+              }, 500);
             }
         } catch (error) {
             console.error('Error sending keypress event:', error);

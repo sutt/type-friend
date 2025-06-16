@@ -19,13 +19,10 @@
     
     <div id="key-display"><span id="pressed-key" class="runes"></span></div>
 
-    <!-- XXX: Temporary form for mobile keyboard testing -->
-    <form action="#" method="post" style="margin-top: 20px;">
-        <label for="test-input" style="color: white;">Test Input:</label>
-        <input type="text" id="test-input" name="test_input" style="margin-right: 10px;">
-        <button type="submit">Submit</button>
+    <form id="mobile-form" action="#" method="post" style="margin-top: 20px;display:none">
+        <label for="test-input" style="color: white;">Cast your spell:</label>
+        <input type="text" id="mobile-input" name="test_input" style="margin-right: 10px;">
     </form>
-    <!-- XXX: End temporary form -->
     
     <footer>
         <div class="footer-content">
@@ -39,8 +36,6 @@
             </div>
         </div>
     </footer>
-    <!-- XXX: Hidden input field to help trigger mobile keyboard -->
-    <input type="text" id="mobile-keyboard-trigger" style="position: absolute; top: -9999px; left: -9999px; width: 1px; height: 1px; opacity: 0; border: 0; padding: 0; margin: 0;" tabindex="-1">
     <script src="/static/js/script.js"></script>
 </body>
 </html>
