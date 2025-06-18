@@ -30,9 +30,9 @@ make_nginx() {
   # fill in env vars to the nginx template
 
   NGINX_TEMPLATE_FN="nginx_example.template.conf"
-  NGINX_OUTPUT_FN="nginx_example.conf"
   API_HOST="127.0.0.1"
   API_MAPPED_PORT="8000"
+  API_DOMAIN="FAKEDOMAIN.com"
   load_env
   
   if [ ! -f $NGINX_TEMPLATE_FN ]; then
@@ -45,10 +45,18 @@ make_nginx() {
     exit 1
   fi
 
-  envsubst < $NGINX_TEMPLATE_FN > ./$NGINX_OUTPUT_FN
+  envsubst \
+    '${API_DOMAIN} ${API_HOST} ${API_MAPPED_PORT}' \
+    < $NGINX_TEMPLATE_FN \
+    > "./${API_DOMAIN}.conf"
 
-  echo "conf output: $NGINX_OUTPUT_FN"
-
+  echo "## conf-file output: ${API_DOMAIN}.conf"
+  echo "====="
+  echo "## cp to nginx sites-available and sym link to sites-enabled:"
+  echo "sudo cp ./${API_DOMAIN}.conf /etc/nginx/sites-available/"
+  echo "sudo ln -s /etc/nginx/sites-available/${API_DOMAIN}.conf /etc/nginx/sites-enabled/${API_DOMAIN}.conf"
+  echo "sudo nginx -t"
+  echo "sudo systemctl reload nginx"
 }
 
 devscripts_help() {
@@ -62,7 +70,7 @@ COMMANDS
   help                    show help
   redeploy                build and run api container
   make_nginx              fill env vars to nginx_example.conf.template
-
+  
 "
   echo "$help"
 }
