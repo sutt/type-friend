@@ -203,13 +203,26 @@ async def get_protected_resource(
 
 if __name__ == "__main__":
     import uvicorn
-    
+    from uvicorn.config import LOGGING_CONFIG
+
     api_debug = bool(int(os.getenv("API_DEBUG", False)))
     forwarded_allow_ips = str(os.getenv("FORWARDED_ALLOW_IPS", "172.17.0.1"))
+
+    _app_log_format = "%(levelname)s - %(name)s - %(message)s"
+    if not api_debug:
+        _app_log_format = "%(asctime)s - " + _app_log_format
+    
+    logging.basicConfig(level=logging.INFO, format=_app_log_format, force=True)
+
+    uvicorn_log_config = LOGGING_CONFIG.copy()
+    if not api_debug:
+        uvicorn_log_config["formatters"]["default"]["fmt"] = "%(asctime)s - %(levelprefix)s %(message)s"
+        uvicorn_log_config["formatters"]["access"]["fmt"] = '%(asctime)s - %(levelprefix)s %(client_addr)s - "%(request_line)s" %(status_code)s'
     
     uvicorn.run(
         app, 
         host="0.0.0.0", 
         port=8000,
         forwarded_allow_ips=(None if api_debug else forwarded_allow_ips),
+        log_config=uvicorn_log_config,
     )
