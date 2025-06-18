@@ -38,7 +38,10 @@ else:
     logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
 
 
-app = FastAPI()
+app = FastAPI(
+    docs_url="/docs" if bool(int(os.getenv("API_DEBUG", 0))) else None,
+    openapi_url="/openapi.json" if bool(int(os.getenv("API_DEBUG", 0))) else None,
+)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
