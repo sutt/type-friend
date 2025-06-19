@@ -174,13 +174,13 @@ async def log_keypress(
 @app.get("/protected_resource", response_model=ProtectedResourceResponse)
 async def get_protected_resource(
     request: Request,
-    session_id: str = None,
+    session_id: str | None = None,
     access_state: dict = Depends(get_user_access_state),
 ):
     """
     A protected resource, accessible only if the correct spell was cast by the session.
     """
-    if session_id is None:
+    if not session_id:
         logger.warning(
             f"Access attempt to /protected_resource without session_id from {request.client.host}"
         )
