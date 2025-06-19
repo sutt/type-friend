@@ -187,6 +187,13 @@ class TestProtectedResourceEndpoint:
         assert response.status_code == 401
         assert response.json()["detail"] == "Session ID required"
 
+    def test_protected_resource_empty_session_id(self, test_client):
+        """Test accessing protected resource with empty session_id."""
+        response = test_client.get("/protected_resource?session_id=")
+
+        assert response.status_code == 401
+        assert response.json()["detail"] == "Session ID required"
+
     def test_protected_resource_invalid_session_id(self, test_client):
         """Test accessing protected resource with invalid session_id."""
         response = test_client.get("/protected_resource?session_id=invalid-uuid")
