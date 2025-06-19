@@ -3,6 +3,14 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import patch
 from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
+from sqlalchemy import create_engine
+from sqlalchemy.pool import StaticPool
+
+from app.database import (
+    metadata,
+    UserAccessState,
+    SuccessfulSpellIPsState,
+)
 
 # Import your app components
 import sys
@@ -19,9 +27,25 @@ from key_buffer_manager import KeyBufferManager
 
 
 @pytest.fixture
-def test_client():
-    """Create a test client for FastAPI app."""
-    return TestClient(app)
+def sqlite_engine():
+    engine = create_engine(
+        "sqlite:///:memory:",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    metadata.create_all(engine)
+    yield engine
+    engine.dispose()
+
+
+@pytest.fixture
+def test_client(sqlite_engine):
+    """Create a test client for FastAPI app using SQLite."""
+    app.dependency_overrides[get_user_access_state] = lambda: UserAccessState(sqlite_engine)
+    app.dependency_overrides[get_successful_spell_ips_state] = lambda: SuccessfulSpellIPsState(sqlite_engine)
+    client = TestClient(app)
+    yield client
+    app.dependency_overrides.clear()
 
 
 @pytest.fixture
@@ -60,19 +84,15 @@ def test_uuid():
     return "test-uuid-12345"
 
 
-@pytest.fixture
-def test_access_state():
-    """Create a fresh access state dictionary for testing."""
-    return {}
 
 
 @pytest.fixture
-def test_client_with_custom_spell():
+def test_client_with_custom_spell(sqlite_engine):
     """Create a test client with custom spell configuration."""
     # Create singleton instance for this test
     test_manager_instance = None
-    test_access_state_instance = {}
-    test_successful_spell_ips_instance = {}
+    test_access_state_instance = UserAccessState(sqlite_engine)
+    test_successful_spell_ips_instance = SuccessfulSpellIPsState(sqlite_engine)
 
     def create_custom_key_buffer_manager(spell_sequence=None):
         nonlocal test_manager_instance
@@ -103,12 +123,12 @@ def test_client_with_custom_spell():
 
 
 @pytest.fixture
-def test_client_with_spell(simple_spell):
+def test_client_with_spell(simple_spell, sqlite_engine):
     """Create a test client with a specific spell sequence."""
     # Create singleton instances for this test
     test_manager_instance = None
-    test_access_state_instance = {}
-    test_successful_spell_ips_instance = {}
+    test_access_state_instance = UserAccessState(sqlite_engine)
+    test_successful_spell_ips_instance = SuccessfulSpellIPsState(sqlite_engine)
 
     def create_spell_manager():
         nonlocal test_manager_instance
@@ -137,12 +157,12 @@ def test_client_with_spell(simple_spell):
 
 
 @pytest.fixture
-def test_client_with_proxy_spell(simple_spell):
+def test_client_with_proxy_spell(simple_spell, sqlite_engine):
     """Create a test client with `X-Forwarded-For` client IP resolution."""
     # Create singleton instances for this test
     test_manager_instance = None
-    test_access_state_instance = {}
-    test_successful_spell_ips_instance = {}
+    test_access_state_instance = UserAccessState(sqlite_engine)
+    test_successful_spell_ips_instance = SuccessfulSpellIPsState(sqlite_engine)
 
     def create_spell_manager():
         nonlocal test_manager_instance

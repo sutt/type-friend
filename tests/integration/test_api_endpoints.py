@@ -250,10 +250,19 @@ class TestEnvironmentConfiguration:
         """Test behavior with empty spell configuration."""
         from main import app, get_key_buffer_manager, get_user_access_state
         from key_buffer_manager import KeyBufferManager
+        from app.database import metadata, UserAccessState
+        from sqlalchemy import create_engine
+        from sqlalchemy.pool import StaticPool
 
         # Create singleton instances for this test
         test_manager_instance = None
-        test_access_state_instance = {}
+        engine = create_engine(
+            "sqlite:///:memory:",
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+        )
+        metadata.create_all(engine)
+        test_access_state_instance = UserAccessState(engine)
 
         # Override with empty spell
         def create_empty_spell_manager():

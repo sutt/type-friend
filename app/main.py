@@ -10,6 +10,11 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from key_buffer_manager import KeyBufferManager
+from database import (
+    init_db,
+    UserAccessState,
+    SuccessfulSpellIPsState,
+)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -36,6 +41,9 @@ if not PARSED_SECRET_SPELL:
     )
 else:
     logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
+
+# Initialize database tables
+init_db()
 
 
 app = FastAPI(
@@ -66,25 +74,19 @@ def get_key_buffer_manager() -> KeyBufferManager:
     return _key_buffer_manager_instance
 
 
-def get_user_access_state() -> dict:
-    """
-    Dependency that provides the user access state dictionary.
-    This allows for easy testing and state isolation.
-    """
+def get_user_access_state() -> UserAccessState:
+    """Dependency that provides access state persisted in the database."""
     global _user_access_granted_instance
     if _user_access_granted_instance is None:
-        _user_access_granted_instance = {}
+        _user_access_granted_instance = UserAccessState()
     return _user_access_granted_instance
 
 
-def get_successful_spell_ips_state() -> dict:
-    """
-    Dependency that provides the successful spell IPs state dictionary.
-    This allows for easy testing and state isolation.
-    """
+def get_successful_spell_ips_state() -> SuccessfulSpellIPsState:
+    """Dependency that provides IP tracking state persisted in the database."""
     global _successful_spell_ips_instance
     if _successful_spell_ips_instance is None:
-        _successful_spell_ips_instance = {}
+        _successful_spell_ips_instance = SuccessfulSpellIPsState()
     return _successful_spell_ips_instance
 
 
@@ -115,8 +117,8 @@ async def log_keypress(
     request: Request,
     event: KeyPressEvent,
     key_buffer_manager: KeyBufferManager = Depends(get_key_buffer_manager),
-    access_state: dict = Depends(get_user_access_state),
-    successful_spell_ips: dict = Depends(get_successful_spell_ips_state),
+    access_state: UserAccessState = Depends(get_user_access_state),
+    successful_spell_ips: SuccessfulSpellIPsState = Depends(get_successful_spell_ips_state),
 ):
     """
     Receives keypress events from the client and checks for the secret spell.
@@ -175,7 +177,7 @@ async def log_keypress(
 async def get_protected_resource(
     request: Request,
     session_id: str | None = None,
-    access_state: dict = Depends(get_user_access_state),
+    access_state: UserAccessState = Depends(get_user_access_state),
 ):
     """
     A protected resource, accessible only if the correct spell was cast by the session.
