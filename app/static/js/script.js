@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (protectedButton) {
                         protectedButton.style.display = 'block';
                         protectedButton.onclick = function() {
-                            window.location.href = `/protected_resource?session_id=${userSessionId}`;
+                            window.location.href = `/mines?session_id=${userSessionId}`;
                         };
                     }
                 }, 500);

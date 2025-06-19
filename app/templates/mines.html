@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Mines - Type Friend</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="icon" href="/static/img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body.mines-body {
+            background-image: url('/static/img/smaug-gold-1.jpg');
+            padding-top: 10vh;
+        }
+        .mines-header {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 10px 20px;
+            max-width: 800px;
+        }
+        .mines-content {
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            border-radius: 8px;
+            margin: 40px 20px 20px 20px;
+            max-width: 800px;
+        }
+        .mines-warning {
+            background-color: rgba(139, 69, 19, 0.8);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+    </style>
+</head>
+<body class="mines-body">
+    <div class="mines-header">
+        <h1 class="mines-title">Welcome to the Mines</h1>
+    </div>
+    
+    <div class="mines-content">
+            <h2 class="runes">You have entered the forbidden depths</h2>
+            
+            <div class="mines-description">
+                <p>Congratulations, brave adventurer! You have successfully cast the ancient spell and gained entry to the legendary mines. The air grows thick with mystery and the scent of untold treasures.</p>
+                
+                <p>Before you stretches a vast network of tunnels carved deep into the mountain's heart. Golden veins run through the walls like rivers of light, and the echo of your footsteps mingles with the distant rumble of something ancient stirring in the depths.</p>
+                
+                <p>Legend speaks of a great dragon who guards the most precious treasures. Will you dare to venture deeper into these hallowed halls, or will you turn back while you still can?</p>
+                
+                <div class="mines-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Beware:</strong> Those who enter the mines rarely return unchanged. The treasures within are matched only by the perils that guard them.
+                </div>
+            </div>
+            
+            <div class="mines-actions">
+                <button class="mines-button primary" onclick="ventureDeeper()">
+                    <i class="fas fa-arrow-down"></i>
+                    Venture Deeper
+                </button>
+                <button class="mines-button secondary" onclick="goBack()">
+                    <i class="fas fa-arrow-left"></i>
+                    Return to Safety
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="social-links">
+                <a href="/about" target="_blank" aria-label="about the site">
+                    <i class="fa-regular fa-circle-question"></i>
+                </a>
+                <a href="https://github.com/sutt/type-friend" target="_blank" aria-label="GitHub Repo">
+                    <i class="fab fa-github"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        function ventureDeeper() {
+            alert("The tunnel ahead is still being carved... Come back soon, adventurer!");
+        }
+        
+        function goBack() {
+            window.location.href = "/";
+        }
+    </script>
+</body>
+</html>

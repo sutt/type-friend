@@ -133,6 +133,37 @@ async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+@app.get("/mines", response_class=HTMLResponse)
+async def enter_mines(
+    request: Request,
+    session_id: str = None,
+    access_state: dict = Depends(get_user_access_state),
+):
+    """
+    Serves the mines template for users who have successfully cast the spell.
+    """
+    if session_id is None:
+        logger.warning(
+            f"Access attempt to /mines without session_id from {request.client.host}"
+        )
+        raise HTTPException(status_code=401, detail="Session ID required")
+
+    has_access = access_state.get(session_id, False)
+
+    if not has_access:
+        logger.warning(
+            f"Access denied to /mines for session_id: {session_id} from {request.client.host}"
+        )
+        raise HTTPException(
+            status_code=403, detail="Access denied. Cast the secret spell correctly."
+        )
+
+    logger.info(
+        f"Access granted to /mines for session_id: {session_id} from {request.client.host}"
+    )
+    return templates.TemplateResponse("mines.html", {"request": request})
+
+
 @app.post("/keypress", response_model=KeyPressResponse)
 async def log_keypress(
     request: Request,
