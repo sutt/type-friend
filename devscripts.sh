@@ -48,15 +48,44 @@ make_nginx() {
   envsubst \
     '${API_DOMAIN} ${API_HOST} ${API_MAPPED_PORT}' \
     < $NGINX_TEMPLATE_FN \
-    > "./${API_DOMAIN}.conf"
+    > "./$API_DOMAIN.conf"
 
   echo "## conf-file output: ${API_DOMAIN}.conf"
   echo "====="
   echo "## cp to nginx sites-available and sym link to sites-enabled:"
-  echo "sudo cp ./${API_DOMAIN}.conf /etc/nginx/sites-available/"
-  echo "sudo ln -s /etc/nginx/sites-available/${API_DOMAIN}.conf /etc/nginx/sites-enabled/${API_DOMAIN}.conf"
+  echo "sudo cp ./$API_DOMAIN.conf /etc/nginx/sites-available/"
+  echo "sudo ln -s /etc/nginx/sites-available/$API_DOMAIN.conf /etc/nginx/sites-enabled/$API_DOMAIN.conf"
   echo "sudo nginx -t"
   echo "sudo systemctl reload nginx"
+  echo "## then run './devscripts.sh init_cerbot' to add certs"
+}
+
+init_certbot() {
+  # add certs for a domain via certbot --webroot mode
+
+  load_env
+  
+  if [ ! -x "$(command -v certbot)" ]; then
+    echo "'certbot' not installed" >&2
+    exit 1
+  fi
+
+  if [ "$(id -u)" -ne 0 ]; then
+    echo "Error: This script must be run as root or with sudo for certbot." >&2
+    exit 1
+  fi
+  
+  if [ -z "$API_DOMAIN" ]; then
+    echo "Error: API_DOMAIN environment variable is not set. Please set it in your .env file." >&2
+    exit 1
+  fi
+
+  echo "Attempting to add cert for domain: $API_DOMAIN via command"
+  echo "certbot certonly --webroot -w /var/www/html -d $API_DOMAIN"
+  
+  certbot certonly --webroot -w /var/www/html -d $API_DOMAIN
+
+  echo "script complete."
 }
 
 devscripts_help() {
@@ -70,6 +99,7 @@ COMMANDS
   help                    show help
   redeploy                build and run api container
   make_nginx              fill env vars to nginx_example.conf.template
+  init_certbot            get certs via certbot for API_DOMAIN
   
 "
   echo "$help"
@@ -88,14 +118,14 @@ case $1 in help)
   ;;
 esac
 case $1 in
-redeploy|make_nginx)
+redeploy|make_nginx|init_certbot)
   func=$1
   shift
   "$func" "$@"
   exit 0
   ;;
 *)
-  echo "command '$1' not found."
+  echo "Error: command '$1' not found." >&2
   exit 1
 esac
 
