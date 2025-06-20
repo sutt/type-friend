@@ -10,6 +10,12 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 
 from key_buffer_manager import KeyBufferManager
+from database import (
+    init_db,
+    get_session,
+    AccessStore,
+    SpellIPStore,
+)
 
 
 logging.basicConfig(level=logging.INFO)
@@ -48,7 +54,16 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
+# TODO - convert to lifespan
+# https://fastapi.tiangolo.com/advanced/events/#lifespan-function
+@app.on_event("startup")
+def startup_event() -> None:
+    """Initialize database tables on startup."""
+    init_db()
+
+
 _key_buffer_manager_instance = None
+_db_session_instance = None
 _user_access_granted_instance = None
 _successful_spell_ips_instance = None
 
@@ -66,6 +81,14 @@ def get_key_buffer_manager() -> KeyBufferManager:
     return _key_buffer_manager_instance
 
 
+def get_db_session():
+    global _db_session_instance
+    if _db_session_instance is None:
+        init_db()
+        _db_session_instance = get_session()
+    return _db_session_instance
+
+
 def get_user_access_state() -> dict:
     """
     Dependency that provides the user access state dictionary.
@@ -73,7 +96,7 @@ def get_user_access_state() -> dict:
     """
     global _user_access_granted_instance
     if _user_access_granted_instance is None:
-        _user_access_granted_instance = {}
+        _user_access_granted_instance = AccessStore(get_db_session())
     return _user_access_granted_instance
 
 
@@ -84,7 +107,7 @@ def get_successful_spell_ips_state() -> dict:
     """
     global _successful_spell_ips_instance
     if _successful_spell_ips_instance is None:
-        _successful_spell_ips_instance = {}
+        _successful_spell_ips_instance = SpellIPStore(get_db_session())
     return _successful_spell_ips_instance
 
 
