@@ -153,8 +153,8 @@ async def log_keypress(
     if key_buffer_manager.check_spell(user_uuid=event.uuid):
         if not (request.client):
             logger.warning(
-                f"Request.client cannot be identified for succesful secret spell cast successfully",
-                f"UUID: {event.uuid}",
+                "Request.client cannot be identified for successful secret spell cast. "
+                f"UUID: {event.uuid}"
             )
             raise HTTPException(
                 status_code=403,
