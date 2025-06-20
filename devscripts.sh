@@ -8,12 +8,43 @@ load_env() {
   if [ -f .env ]; then
     . ./.env
   else
-      echo "WARNING: could not find .env file. Running with all default args"
+    echo "WARNING: could not find .env file. Running with all default args"
+  fi
+}
+
+start() {
+  # start the app and db
+  # default: start with docker compose
+  # add --native to start db in docker and app natively
+
+  load_env
+
+  if [ "$1" == "--native" ]; then
+    run_postgres
+
+    echo "sleeping 5 seconds for DB to start up..."
+    sleep 5
+    
+    if [[ "$(which python)" == "$PWD/.venv/bin/python" ]]; then
+      echo "Project virtualenv '.venv' appears to be active."
+    else                 
+      echo "Project virtualenv '.venv' does not appear to be active."
+      echo "Attempting to source it."
+      source .venv/bin/activate 
+    fi                
+    echo "starting api natively..."                                                                
+    python app/main.py
+  else
+    echo "starting docker compose in detach mode..."
+    docker compose up --build -d
   fi
 }
 
 redeploy() {
   # docker commands: deploy / re-deploy api container
+
+  echo "legacy script since the app now requires db to be active as well, exiting..."
+  exit 1
   
   API_IMAGE_NAME="type-friend:latest"
   API_CONTAINER_NAME="type-friend-container"
@@ -24,6 +55,25 @@ redeploy() {
   docker stop "$API_CONTAINER_NAME" && docker rm "$API_CONTAINER_NAME" || true
   docker run -d --name "$API_CONTAINER_NAME" -p "$API_MAPPED_PORT":8000 "$API_IMAGE_NAME"
   echo "Deploy complete. Container '$API_CONTAINER_NAME' running on port: $API_MAPPED_PORT"
+}
+
+run_postgres() {
+  # run only the db container
+  DB_CONTAINER_NAME="tf-db"
+  load_env
+
+  docker compose up db -d  
+  echo "postgres container '$DB_CONTAINER_NAME' now running"
+
+}
+
+conn_sql() {
+  # connect to db 
+  
+  DB_CONTAINER_NAME="tf-db"
+  load_env
+
+  docker exec -it $DB_CONTAINER_NAME psql -U postgres -d postgres
 }
 
 make_nginx() {
@@ -50,14 +100,20 @@ make_nginx() {
     < $NGINX_TEMPLATE_FN \
     > "./$API_DOMAIN.conf"
 
-  echo "## conf-file output: ${API_DOMAIN}.conf"
-  echo "====="
-  echo "## cp to nginx sites-available and sym link to sites-enabled:"
-  echo "sudo cp ./$API_DOMAIN.conf /etc/nginx/sites-available/"
-  echo "sudo ln -s /etc/nginx/sites-available/$API_DOMAIN.conf /etc/nginx/sites-enabled/$API_DOMAIN.conf"
-  echo "sudo nginx -t"
-  echo "sudo systemctl reload nginx"
-  echo "## then run './devscripts.sh init_cerbot' to add certs"
+  # TODO - add check for certs in /etc/letsencrypt (but need sudo)
+
+  help="
+## conf-file output: ${API_DOMAIN}.conf
+=====
+## now run 'sudo ./devscripts.sh init_certbot' to add certs. and finally...
+=====
+## cp to nginx sites-available and sym link to sites-enabled:
+sudo cp ./$API_DOMAIN.conf /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/$API_DOMAIN.conf /etc/nginx/sites-enabled/$API_DOMAIN.conf
+sudo nginx -t
+sudo systemctl reload nginx
+"
+  echo "$help"
 }
 
 init_certbot() {
@@ -97,9 +153,13 @@ USAGE
 
 COMMANDS
   help                    show help
-  redeploy                build and run api container
+  start                   start the app via docker-compose
+    --native              start the db in docker, app runs natively
+  run_postgres            run a postgres container (to connect natively running app)
+  conn_sql                open psql shell connected to db container
   make_nginx              fill env vars to nginx_example.conf.template
   init_certbot            get certs via certbot for API_DOMAIN
+  redeploy                (deprecated) build and run api container
   
 "
   echo "$help"
@@ -118,7 +178,7 @@ case $1 in help)
   ;;
 esac
 case $1 in
-redeploy|make_nginx|init_certbot)
+start|redeploy|run_postgres|conn_sql|make_nginx|init_certbot)
   func=$1
   shift
   "$func" "$@"
