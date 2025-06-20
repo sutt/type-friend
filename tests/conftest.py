@@ -17,9 +17,14 @@ from main import (
 )
 from key_buffer_manager import KeyBufferManager
 
+@pytest.fixture
+def dburl_env(tmp_path):
+    db_url = f"sqlite:///{tmp_path}/db.sqlite"
+    os.environ["DATABASE_URL"] = db_url
+
 
 @pytest.fixture
-def test_client():
+def test_client(dburl_env):
     """Create a test client for FastAPI app."""
     return TestClient(app)
 
