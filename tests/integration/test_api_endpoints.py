@@ -39,6 +39,9 @@ class TestKeypressEndpoint:
             response = test_client_with_spell.post("/keypress", json=payload)
             responses.append(response.json())
 
+        # All but the last response should not trigger the spell
+        assert all(r["spell_successful"] is False for r in responses[:-1])
+
         # Last response should indicate spell success
         final_response = responses[-1]
         assert final_response["spell_successful"] is True
