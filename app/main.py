@@ -54,6 +54,8 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
+# TODO - convert to lifespan
+# https://fastapi.tiangolo.com/advanced/events/#lifespan-function
 @app.on_event("startup")
 def startup_event() -> None:
     """Initialize database tables on startup."""
