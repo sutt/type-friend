@@ -136,13 +136,13 @@ async def read_root(request: Request):
 @app.get("/mines", response_class=HTMLResponse)
 async def enter_mines(
     request: Request,
-    session_id: str = None,
+    session_id: str | None = None,
     access_state: dict = Depends(get_user_access_state),
 ):
     """
     Serves the mines template for users who have successfully cast the spell.
     """
-    if session_id is None:
+    if not session_id:
         logger.warning(
             f"Access attempt to /mines without session_id from {request.client.host}"
         )
