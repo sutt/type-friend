@@ -225,39 +225,6 @@ async def log_keypress(
     return response_message
 
 
-@app.get("/protected_resource", response_model=ProtectedResourceResponse)
-async def get_protected_resource(
-    request: Request,
-    session_id: str | None = None,
-    access_state: dict = Depends(get_user_access_state),
-):
-    """
-    A protected resource, accessible only if the correct spell was cast by the session.
-    """
-    if not session_id:
-        logger.warning(
-            f"Access attempt to /protected_resource without session_id from {request.client.host}"
-        )
-        raise HTTPException(status_code=401, detail="Session ID required")
-
-    has_access = access_state.get(session_id, False)
-
-    if not has_access:
-        logger.warning(
-            f"Access denied to /protected_resource for session_id: {session_id} from {request.client.host}"
-        )
-        raise HTTPException(
-            status_code=403, detail="Access denied. Cast the secret spell correctly."
-        )
-
-    logger.info(
-        f"Access granted to /protected_resource for session_id: {session_id} from {request.client.host}"
-    )
-    return {
-        "message": "Welcome to the protected resource! You cast the spell correctly."
-    }
-
-
 if __name__ == "__main__":
     import uvicorn
     from uvicorn.config import LOGGING_CONFIG
