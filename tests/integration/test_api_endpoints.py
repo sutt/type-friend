@@ -112,23 +112,25 @@ class TestKeypressEndpoint:
             in final_response_uuid2["message"]
         )
 
-        # Verify access to protected resource
+        # Verify access to mines
         # UUID1 should have access
-        protected_response_uuid1 = test_client_with_proxy_spell.get(
-            f"/protected_resource?session_id={uuid1}",
+        mines_response_uuid1 = test_client_with_proxy_spell.get(
+            f"/mines?session_id={uuid1}",
             headers={
                 "X-Forwarded-For": shared_ip
             },  # IP for logging, not access control here
         )
-        assert protected_response_uuid1.status_code == 200
+        assert mines_response_uuid1.status_code == 200
+        assert mines_response_uuid1.headers["content-type"] == "text/html; charset=utf-8"
+        assert "Welcome to the Mines" in mines_response_uuid1.text
 
         # UUID2 should NOT have access
-        protected_response_uuid2 = test_client_with_proxy_spell.get(
-            f"/protected_resource?session_id={uuid2}",
+        mines_response_uuid2 = test_client_with_proxy_spell.get(
+            f"/mines?session_id={uuid2}",
             headers={"X-Forwarded-For": shared_ip},
         )
-        assert protected_response_uuid2.status_code == 403
-        assert "Access denied" in protected_response_uuid2.json()["detail"]
+        assert mines_response_uuid2.status_code == 403
+        assert "Access denied" in mines_response_uuid2.json()["detail"]
 
     def test_keypress_spell_cast_different_ips_different_uuids(
         self, test_client_with_proxy_spell, simple_spell
@@ -166,40 +168,44 @@ class TestKeypressEndpoint:
         assert final_response_uuid2["spell_successful"] is True
         assert "Spell cast successfully!" in final_response_uuid2["message"]
 
-        # Verify access to protected resource for both
+        # Verify access to mines for both
         # UUID1 from IP1 should have access
-        protected_response_uuid1 = test_client_with_proxy_spell.get(
-            f"/protected_resource?session_id={uuid1}", headers={"X-Forwarded-For": ip1}
+        mines_response_uuid1 = test_client_with_proxy_spell.get(
+            f"/mines?session_id={uuid1}", headers={"X-Forwarded-For": ip1}
         )
-        assert protected_response_uuid1.status_code == 200
+        assert mines_response_uuid1.status_code == 200
+        assert mines_response_uuid1.headers["content-type"] == "text/html; charset=utf-8"
+        assert "Welcome to the Mines" in mines_response_uuid1.text
 
         # UUID2 from IP2 should have access
-        protected_response_uuid2 = test_client_with_proxy_spell.get(
-            f"/protected_resource?session_id={uuid2}", headers={"X-Forwarded-For": ip2}
+        mines_response_uuid2 = test_client_with_proxy_spell.get(
+            f"/mines?session_id={uuid2}", headers={"X-Forwarded-For": ip2}
         )
-        assert protected_response_uuid2.status_code == 200
+        assert mines_response_uuid2.status_code == 200
+        assert mines_response_uuid2.headers["content-type"] == "text/html; charset=utf-8"
+        assert "Welcome to the Mines" in mines_response_uuid2.text
 
 
-class TestProtectedResourceEndpoint:
-    """Tests for the protected resource endpoint."""
+class TestMinesEndpoint:
+    """Tests for the /mines endpoint."""
 
-    def test_protected_resource_no_session_id(self, test_client):
-        """Test accessing protected resource without session_id."""
-        response = test_client.get("/protected_resource")
-
-        assert response.status_code == 401
-        assert response.json()["detail"] == "Session ID required"
-
-    def test_protected_resource_empty_session_id(self, test_client):
-        """Test accessing protected resource with empty session_id."""
-        response = test_client.get("/protected_resource?session_id=")
+    def test_mines_no_session_id(self, test_client):
+        """Test accessing /mines without session_id."""
+        response = test_client.get("/mines")
 
         assert response.status_code == 401
         assert response.json()["detail"] == "Session ID required"
 
-    def test_protected_resource_invalid_session_id(self, test_client):
-        """Test accessing protected resource with invalid session_id."""
-        response = test_client.get("/protected_resource?session_id=invalid-uuid")
+    def test_mines_empty_session_id(self, test_client):
+        """Test accessing /mines with empty session_id."""
+        response = test_client.get("/mines?session_id=")
+
+        assert response.status_code == 401
+        assert response.json()["detail"] == "Session ID required"
+
+    def test_mines_invalid_session_id(self, test_client):
+        """Test accessing /mines with invalid session_id."""
+        response = test_client.get("/mines?session_id=invalid-uuid")
 
         assert response.status_code == 403
         assert (
@@ -207,10 +213,10 @@ class TestProtectedResourceEndpoint:
             == "Access denied. Cast the secret spell correctly."
         )
 
-    def test_protected_resource_valid_access(
+    def test_mines_valid_access(
         self, test_client_with_custom_spell, test_uuid
     ):
-        """Test accessing protected resource after casting spell."""
+        """Test accessing /mines after casting spell."""
         # Cast the custom spell sequence (x, y, z)
         keys = ["x", "y", "z"]
 
@@ -218,15 +224,14 @@ class TestProtectedResourceEndpoint:
             payload = {"key": key, "uuid": test_uuid}
             test_client_with_custom_spell.post("/keypress", json=payload)
 
-        # Now access the protected resource
+        # Now access the /mines endpoint
         response = test_client_with_custom_spell.get(
-            f"/protected_resource?session_id={test_uuid}"
+            f"/mines?session_id={test_uuid}"
         )
 
         assert response.status_code == 200
-        data = response.json()
-        assert "Welcome to the protected resource!" in data["message"]
-        assert "You cast the spell correctly." in data["message"]
+        assert response.headers["content-type"] == "text/html; charset=utf-8"
+        assert "Welcome to the Mines" in response.text
 
 
 class TestEnvironmentConfiguration:
@@ -289,7 +294,7 @@ class TestEndToEndFlow:
     """End-to-end integration tests."""
 
     def test_complete_user_journey(self, test_client_with_spell, simple_spell):
-        """Test complete user journey from keypress to protected access."""
+        """Test complete user journey from keypress to /mines access."""
         user_uuid = "e2e-test-uuid"
 
         # Step 1: User loads the page (implicitly tested by other tests)
@@ -309,17 +314,16 @@ class TestEndToEndFlow:
         # Step 3: Verify spell was cast successfully
         assert spell_successful, "Spell should have been cast successfully"
 
-        # Step 4: Access protected resource
-        protected_response = test_client_with_spell.get(
-            f"/protected_resource?session_id={user_uuid}"
+        # Step 4: Access /mines endpoint
+        mines_response = test_client_with_spell.get(
+            f"/mines?session_id={user_uuid}"
         )
-        assert protected_response.status_code == 200
-        assert (
-            "Welcome to the protected resource!" in protected_response.json()["message"]
-        )
+        assert mines_response.status_code == 200
+        assert mines_response.headers["content-type"] == "text/html; charset=utf-8"
+        assert "Welcome to the Mines" in mines_response.text
 
-    def test_user_without_spell_cannot_access_protected(self, test_client):
-        """Test that user who hasn't cast spell cannot access protected resource."""
+    def test_user_without_spell_cannot_access_mines(self, test_client):
+        """Test that user who hasn't cast spell cannot access /mines."""
         user_uuid = "no-spell-uuid"
 
         # User presses some keys but not the correct spell
@@ -329,9 +333,9 @@ class TestEndToEndFlow:
             response = test_client.post("/keypress", json=payload)
             assert response.json()["spell_successful"] is False
 
-        # Try to access protected resource
-        protected_response = test_client.get(
-            f"/protected_resource?session_id={user_uuid}"
+        # Try to access /mines endpoint
+        mines_response = test_client.get(
+            f"/mines?session_id={user_uuid}"
         )
-        assert protected_response.status_code == 403
-        assert "Access denied" in protected_response.json()["detail"]
+        assert mines_response.status_code == 403
+        assert "Access denied" in mines_response.json()["detail"]
