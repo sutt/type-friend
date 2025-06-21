@@ -1,5 +1,6 @@
 import logging
 import os
+from contextlib import asynccontextmanager
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -44,22 +45,21 @@ else:
     logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
+
 app = FastAPI(
     docs_url="/docs" if bool(int(os.getenv("API_DEBUG", 0))) else None,
     openapi_url="/openapi.json" if bool(int(os.getenv("API_DEBUG", 0))) else None,
+    lifespan=lifespan,
 )
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 templates = Jinja2Templates(directory=TEMPLATES_DIR)
-
-
-# TODO - convert to lifespan
-# https://fastapi.tiangolo.com/advanced/events/#lifespan-function
-@app.on_event("startup")
-def startup_event() -> None:
-    """Initialize database tables on startup."""
-    init_db()
 
 
 _key_buffer_manager_instance = None
