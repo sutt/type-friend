@@ -27,12 +27,21 @@ start() {
     
     if [[ "$(which python)" == "$PWD/.venv/bin/python" ]]; then
       echo "Project virtualenv '.venv' appears to be active."
-    else                 
+    else
       echo "Project virtualenv '.venv' does not appear to be active."
       echo "Attempting to source it."
       source .venv/bin/activate 
-    fi                
-    echo "starting api natively..."                                                                
+    fi
+    if [ -z "$DATABASE_URL" ]; then
+      echo "switching DB_HOST to 127.0.0.1"
+      DB_HOST="127.0.0.1"
+      export DB_HOST
+    else 
+      echo "switching DATABASE_URL from docker network name to localhost"
+      DATABASE_URL=$(echo "$DATABASE_URL" | sed 's/@db:/@127.0.0.1:/g')
+      export DATABASE_URL
+    fi
+    echo "starting api natively..."
     python app/main.py
   else
     echo "starting docker compose in detach mode..."
@@ -71,9 +80,10 @@ conn_sql() {
   # connect to db 
   
   DB_CONTAINER_NAME="tf-db"
+  DB_NAME="postgres"
   load_env
 
-  docker exec -it $DB_CONTAINER_NAME psql -U postgres -d postgres
+  docker exec -it $DB_CONTAINER_NAME psql -U postgres -d $DB_NAME
 }
 
 make_nginx() {

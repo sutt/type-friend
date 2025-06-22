@@ -1,4 +1,5 @@
 import os
+import logging
 from datetime import datetime
 from sqlalchemy import create_engine, Column, String, Boolean, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
@@ -7,6 +8,8 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 Base = declarative_base()
 _engine = None
 _SessionLocal = None
+
+logger = logging.getLogger(__name__)
 
 
 def reset_engine():
@@ -17,10 +20,34 @@ def reset_engine():
     _SessionLocal = None
 
 
+def _build_database_url():
+    """Build database URL from individual DB_ environment variables or fallback to DATABASE_URL."""
+    db_host = os.getenv("DB_HOST")
+    db_port = os.getenv("DB_PORT")
+    db_name = os.getenv("DB_NAME")
+    db_user = os.getenv("DB_USER")
+    db_password = os.getenv("DB_PASSWORD")
+    db_url = os.getenv("DATABASE_URL")
+    
+    if db_url is not None:
+        return db_url
+    elif all([db_host, db_name, db_user]):
+        port_part = f":{db_port}" if db_port else ""
+        password_part = f":{db_password}" if db_password else ""
+        user_part = f"{db_user}{password_part}"
+        return f"postgresql+psycopg2://{user_part}@{db_host}{port_part}/{db_name}"
+    else:
+        logger.warning(
+            "DB_URL or DB_HOST/DB_NAME/DB_USER not set; "
+            "defaulting to sqlite db: app.db"
+        )
+        return "sqlite:///./app.db"
+
+
 def get_engine():
     global _engine, _SessionLocal
     if _engine is None:
-        db_url = os.getenv("DATABASE_URL", "sqlite:///./app.db")
+        db_url = _build_database_url()
         connect_args = {}
         if db_url.startswith("sqlite"):
             connect_args["check_same_thread"] = False
