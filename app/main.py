@@ -44,6 +44,8 @@ if not PARSED_SECRET_SPELL:
 else:
     logger.info(f"Loaded PARSED_SECRET_SPELL: {PARSED_SECRET_SPELL}")
 
+API_DOMAIN = os.getenv("API_DOMAIN", "https://type-friend.com")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -130,7 +132,14 @@ async def read_root(request: Request):
     """
     Serves the main HTML page.
     """
-    return templates.TemplateResponse("index.html", {"request": request})
+    context = {
+        "request": request,
+        "api_domain": API_DOMAIN,
+        "og_title": "Mines of Chaumia",
+        "og_description": "The Mines of Chaumia are Open & filled with Treasures",
+        "og_image": "static/img/gandalf-at-door.jpg"
+    }
+    return templates.TemplateResponse("index.html", context)
 
 
 @app.get("/mines", response_class=HTMLResponse)
@@ -161,7 +170,14 @@ async def enter_mines(
     logger.info(
         f"Access granted to /mines for session_id: {session_id} from {request.client.host}"
     )
-    return templates.TemplateResponse("mines.html", {"request": request})
+    context = {
+        "request": request,
+        "api_domain": API_DOMAIN,
+        "og_title": "Mines of Chaumia",
+        "og_description": "The Mines of Chaumia are Open & filled with Treasures",
+        "og_image": "static/img/gandalf-at-door.jpg"
+    }
+    return templates.TemplateResponse("mines.html", context)
 
 
 @app.post("/keypress", response_model=KeyPressResponse)
