@@ -37,34 +37,21 @@
 </head>
 <body class="mines-body">
     <div class="mines-header">
-        <h1 class="mines-title">Welcome to the Mines</h1>
+        <h1 class="mines-title">
+            Welcome to the Mines of Chaumia
+        </h1>
     </div>
     
     <div class="mines-content">
-            <h2 class="runes">You have entered the forbidden depths</h2>
+        <h2>What treasure have you found?</h2>
+        <h3 class="runes">bitcoin | e-cash</h3>
+        
+        <div class="mines-description">
+            <p>Oh look, some e-cash!</p>
             
-            <div class="mines-description">
-                <p>Congratulations, brave adventurer! You have successfully cast the ancient spell and gained entry to the legendary mines. The air grows thick with mystery and the scent of untold treasures.</p>
-                
-                <p>Before you stretches a vast network of tunnels carved deep into the mountain's heart. Golden veins run through the walls like rivers of light, and the echo of your footsteps mingles with the distant rumble of something ancient stirring in the depths.</p>
-                
-                <p>Legend speaks of a great dragon who guards the most precious treasures. Will you dare to venture deeper into these hallowed halls, or will you turn back while you still can?</p>
-                
-                <div class="mines-warning">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Beware:</strong> Those who enter the mines rarely return unchanged. The treasures within are matched only by the perils that guard them.
-                </div>
-            </div>
-            
-            <div class="mines-actions">
-                <button class="mines-button primary" onclick="ventureDeeper()">
-                    <i class="fas fa-arrow-down"></i>
-                    Venture Deeper
-                </button>
-                <button class="mines-button secondary" onclick="goBack()">
-                    <i class="fas fa-arrow-left"></i>
-                    Return to Safety
-                </button>
+            <div class="mines-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Beware:</strong> Those who enter the mines cannot easily return. Make sure to claim your treasure of save the full URL to return to your treasure when you can.
             </div>
         </div>
     </div>
@@ -82,14 +69,5 @@
         </div>
     </footer>
     
-    <script>
-        function ventureDeeper() {
-            alert("The tunnel ahead is still being carved... Come back soon, adventurer!");
-        }
-        
-        function goBack() {
-            window.location.href = "/";
-        }
-    </script>
 </body>
 </html>
