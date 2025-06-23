@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const doorStatusElement = document.getElementById('door-status');
     const mobileFormElement = document.getElementById('mobile-form');
     const mobileInputElement = document.getElementById('mobile-input');
+    const hintFieldElement = document.getElementById('hint-field');
     let userSessionId = crypto.randomUUID();
     console.log(`User session ID: ${userSessionId}`);
 
@@ -12,6 +13,34 @@ document.addEventListener('DOMContentLoaded', () => {
     let fadeInAndHoldTimeoutId = null;
     let fadeOutCleanupTimeoutId = null;
 
+    function highlightMatchingChar(key) {
+        if (!hintFieldElement) return;
+        
+        hintFieldElement.innerHTML = 'friend - enter';
+        
+        const text = 'friend - enter';
+        const normalizedKey = key.toLowerCase();
+        
+        let matchIndex = -1;
+        if (normalizedKey === 'enter') {
+            matchIndex = text.indexOf('enter');
+            if (matchIndex !== -1) {
+                const beforeMatch = text.substring(0, matchIndex);
+                const match = 'enter';
+                const afterMatch = text.substring(matchIndex + 5);
+                hintFieldElement.innerHTML = `${beforeMatch}<span style="color: yellow;">${match}</span>${afterMatch}`;
+            }
+        } else if (normalizedKey.length === 1) {
+            matchIndex = text.indexOf(normalizedKey);
+            if (matchIndex !== -1) {
+                const beforeMatch = text.substring(0, matchIndex);
+                const match = text.charAt(matchIndex);
+                const afterMatch = text.substring(matchIndex + 1);
+                hintFieldElement.innerHTML = `${beforeMatch}<span style="color: yellow;">${match}</span>${afterMatch}`;
+            }
+        }
+    }
+
     async function processAndSendKey(keyToSend) {
         if (!keyToSend || keyToSend === "Unidentified") {
             return;
@@ -19,6 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // toLowerCase because font doesnt have upper case for some letters
         pressedKeyElement.textContent = keyToSend.toLowerCase();
+
+        highlightMatchingChar(keyToSend);
 
         clearTimeout(fadeInAndHoldTimeoutId);
         clearTimeout(fadeOutCleanupTimeoutId);
