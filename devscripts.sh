@@ -71,7 +71,7 @@ run_postgres() {
   DB_CONTAINER_NAME="tf-db"
   load_env
 
-  docker compose up db -d  
+  docker compose -f docker-compose.yml -f docker-compose.dev.yml up db -d
   echo "postgres container '$DB_CONTAINER_NAME' now running"
 
 }
