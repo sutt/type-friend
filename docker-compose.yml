@@ -13,6 +13,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - app_net
 
   app:
     build: .
@@ -26,6 +28,16 @@ services:
     ports:
       - '${API_MAPPED_PORT}:8000'
     command: ["python", "app/main.py"]
+    networks:
+      - app_net
 
 volumes:
   db-data:
+
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.168.32.0/24
+          gateway: 192.168.32.1
