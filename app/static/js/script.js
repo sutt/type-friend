@@ -92,6 +92,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         };
                     }
                 }, 500);
+                // Hide error message if spell is successful
+                const errorElement = document.getElementById('error-message');
+                if (errorElement) {
+                    errorElement.style.display = 'none';
+                }
+            } else if (result.message && result.message.includes('already cast the spell')) {
+                // Display IP blocking error message
+                const errorElement = document.getElementById('error-message');
+                if (errorElement) {
+                    errorElement.textContent = result.message;
+                    errorElement.style.display = 'block';
+                }
             }
         } catch (error) {
             console.error('Error sending keypress event:', error);

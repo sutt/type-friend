@@ -37,7 +37,11 @@ def test_initial_page_load_elements_visibility(page: Page):
     key_display_area = page.locator("#key-display")
     expect(key_display_area).to_be_hidden()
 
-    # 6. Check that the mobile form is initially hidden on desktop
+    # 6. Check that the error message is initially hidden
+    error_message = page.locator("#error-message")
+    expect(error_message).to_be_hidden()
+
+    # 7. Check that the mobile form is initially hidden on desktop
     mobile_form = page.locator("form#mobile-form")
     expect(mobile_form).to_be_hidden()
 

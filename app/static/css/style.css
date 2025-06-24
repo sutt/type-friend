@@ -120,6 +120,18 @@ h2 {
     margin-right: 10px;
 }
 
+.error-message {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: rgba(220, 53, 69, 0.9);
+    border: 2px solid #dc3545;
+    border-radius: 4px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+    max-width: 600px;
+    word-wrap: break-word;
+}
+
 footer {
     color: #fff;
     padding: 10px 0;
