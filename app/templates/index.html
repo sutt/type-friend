@@ -13,6 +13,11 @@
 <body>
     <h1 id="door-status">THE DOORS APPEAR LOCKED</h1>
     
+    <form id="mobile-form" action="#" method="post">
+        <label for="test-input">Cast your spell:</label>
+        <input type="text" id="mobile-input" name="test_input">
+    </form>
+
     <button id="protected-link" style="display:none;">Enter the Mines</button>
     
     <h2 id="hint-field" class="runes">
@@ -22,11 +27,6 @@
     <div id="key-display"><span id="pressed-key" class="runes"></span></div>
     
     <div id="error-message" class="error-message" style="display:none;"></div>
-
-    <form id="mobile-form" action="#" method="post">
-        <label for="test-input">Cast your spell:</label>
-        <input type="text" id="mobile-input" name="test_input">
-    </form>
     
     {% include "partials/footer.html" %}
     <script src="/static/js/script.js"></script>
