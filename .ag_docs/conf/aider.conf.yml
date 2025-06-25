@@ -1,0 +1,27 @@
+dark-mode: true
+show-release-notes: false
+
+#auto-commits: false
+#dirty-commits: true
+attribute-committer: false
+attribute-author: false
+
+read:
+  - .ag_docs/guide/GUIDANCE.md
+  - .ag_docs/guide/ARCHITECTURE.md
+  
+#lint: false
+#lint-cmd: xxx
+#lint-cmd:
+#  - xxx
+#  - yyy
+#  - zzz
+#auto-lint: true
+
+#test-cmd: xxx
+#auto-test: false
+
+# experimental =========
+
+# cache-prompts: true
+# cache-keepalive-pings: true
