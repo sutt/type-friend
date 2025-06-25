@@ -246,6 +246,7 @@ if __name__ == "__main__":
     from uvicorn.config import LOGGING_CONFIG
 
     api_debug = bool(int(os.getenv("API_DEBUG", False)))
+    api_port = int(os.getenv("API_PORT", 8000))
     forwarded_allow_ips = str(os.getenv("FORWARDED_ALLOW_IPS", "172.17.0.1"))
 
     _app_log_format = "%(levelname)s - %(name)s - %(message)s"
@@ -262,7 +263,7 @@ if __name__ == "__main__":
     uvicorn.run(
         app, 
         host="0.0.0.0", 
-        port=8000,
+        port=api_port,
         forwarded_allow_ips=(None if api_debug else forwarded_allow_ips),
         log_config=uvicorn_log_config,
     )

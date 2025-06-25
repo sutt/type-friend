@@ -26,7 +26,7 @@ services:
     environment:
       DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/postgres
     ports:
-      - '${API_MAPPED_PORT}:8000'
+      - '${API_MAPPED_PORT:-8000}:${API_PORT:-8000}'
     command: ["python", "app/main.py"]
     networks:
       - app_net
