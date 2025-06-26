@@ -70,6 +70,22 @@ _user_access_granted_instance = None
 _successful_spell_ips_instance = None
 
 
+@app.exception_handler(404)
+async def not_found_exception_handler(request: Request, exc: HTTPException):
+    """
+    Custom 404 Not Found handler.
+    """
+    logger.info(f"Serving 404 page for path: {request.url.path}")
+    context = {
+        "request": request,
+        "api_domain": API_DOMAIN,
+        "og_title": "404 - Page Not Found",
+        "og_description": "The page you are looking for does not exist.",
+        "og_image": "static/img/gandalf-at-door.jpg",
+    }
+    return templates.TemplateResponse("404.html", context, status_code=404)
+
+
 def get_key_buffer_manager() -> KeyBufferManager:
     """
     Dependency that provides the KeyBufferManager singleton instance.

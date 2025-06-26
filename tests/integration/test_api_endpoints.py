@@ -339,3 +339,17 @@ class TestEndToEndFlow:
         )
         assert mines_response.status_code == 403
         assert "Access denied" in mines_response.json()["detail"]
+
+
+class Test404NotFound:
+    """Tests for the custom 404 Not Found handler."""
+
+    def test_get_nonexistent_route_returns_custom_404_page(self, test_client):
+        """Test that accessing a nonexistent route returns the custom 404 HTML page."""
+        response = test_client.get("/this-route-does-not-exist")
+
+        assert response.status_code == 404
+        assert response.headers["content-type"] == "text/html; charset=utf-8"
+        assert "404 - Page Not Found" in response.text
+        assert "wrong turn in the dark mines" in response.text
+        assert "Go back to the entrance" in response.text
