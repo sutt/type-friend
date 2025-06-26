@@ -1,5 +1,8 @@
-- When running /run or /test commands make sure to activate the app's virtualenv within the command. This is because the aider chat environemnt is not environment in which the app runs. To do this activate python associated with the app inline in your bash commands, e.g.: `.venv/bin/python app/main.py`. 
-    - Also do the same for working with other python scripts on the app, e.g. pip or pytest. For example to install libraries to the app environment use: `.venv/bin/pip install pytest` and to execute pytest do `.venv/bin/python -m pytest tests`.
+- **Activate uv when running:** if using /run or /test commands make sure to activate the app's uv environment with `uv run` or `uv pip` within the command. This is because the aider chat environemnt is not environment in which the app runs. To do this activate python associated with the app inline in your bash commands, e.g.: `uv run python app/main.py`. 
+    - Also do the same for working with other python scripts on the app, e.g. pip or pytest:
+        - For example to install libraries to the app `uv pip install <package_name> `
+        - For example to execute pytest do `uv run pytest [params]`.
+        - Or you can use `uv run python -m <module>` style as well.
 - Commenting policy: Feel free to add comments but include the XXX prefix before all comments.
     - add "XXX: " prefix before all comments, e.g. `# XXX: this decrements the counter`
     - if the comment spans multiple lines, add the XXX prefix to each line 
