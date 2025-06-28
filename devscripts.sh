@@ -154,6 +154,36 @@ init_certbot() {
   echo "script complete."
 }
 
+list_ips() {
+  # list all IPs in the successful_spell_ips table
+  load_env
+  if [[ "$(which python)" == "$PWD/.venv/bin/python" ]]; then
+      echo "Project virtualenv '.venv' appears to be active."
+  else
+      echo "Project virtualenv '.venv' does not appear to be active."
+      echo "Attempting to source it."
+      source .venv/bin/activate
+  fi
+  python app/db_utils.py list_ips
+}
+
+erase_ip() {
+  # erase an IP from the successful_spell_ips table
+  load_env
+  if [[ "$(which python)" == "$PWD/.venv/bin/python" ]]; then
+      echo "Project virtualenv '.venv' appears to be active."
+  else
+      echo "Project virtualenv '.venv' does not appear to be active."
+      echo "Attempting to source it."
+      source .venv/bin/activate
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: ./devscripts.sh erase_ip <ip_address>"
+    exit 1
+  fi
+  python app/db_utils.py erase_ip "$1"
+}
+
 devscripts_help() {
   # script cli help
 
@@ -169,6 +199,8 @@ COMMANDS
   conn_sql                open psql shell connected to db container
   make_nginx              fill env vars to nginx_example.conf.template
   init_certbot            get certs via certbot for API_DOMAIN
+  list_ips                list all IPs in the successful_spell_ips table
+  erase_ip <ip_address>   erase an IP from the successful_spell_ips table
   redeploy                (deprecated) build and run api container
   
 "
@@ -188,7 +220,7 @@ case $1 in help)
   ;;
 esac
 case $1 in
-start|redeploy|run_postgres|conn_sql|make_nginx|init_certbot)
+start|redeploy|run_postgres|conn_sql|make_nginx|init_certbot|list_ips|erase_ip)
   func=$1
   shift
   "$func" "$@"
